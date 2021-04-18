@@ -8,7 +8,7 @@ export default new VueRouter({
   routes: [
     {
       path: '/',
-      redirect: '/ebook'
+      redirect: '/store'
     },
     {
       path: '/ebook',
@@ -17,6 +17,18 @@ export default new VueRouter({
         {
           path: ':fileName',
           component: () => import('../components/ebook/EbookReader.vue')
+        }
+      ]
+    },
+    {
+      path: '/store',
+      component: () => import('../views/store/index.vue'),
+      redirect: '/store/home',
+      children: [
+        {
+          // 使用相对路径
+          path: 'home',
+          component: () => import('../views/store/StoreHome.vue'),
         }
       ]
     }
