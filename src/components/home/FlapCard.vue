@@ -1,6 +1,10 @@
 <template>
   <div class="flap-card-wrapper" v-show="flapCardVisible">
-    <div class="flap-card-bg">
+    <div
+      class="flap-card-bg"
+      :class="{ animation: runFlapCardAnimation }"
+      v-show="runFlapCardAnimation"
+    >
       <div
         class="flap-card"
         v-for="(item, index) in flapCardList"
@@ -21,6 +25,27 @@
         </div>
       </div>
     </div>
+    <div
+      class="book-card"
+      :class="{ animation: runBookCardAnimation }"
+      v-show="runBookCardAnimation"
+    >
+      <div class="book-card-wrapper">
+        <div class="img-wrapper">
+          <img class="img" :src="data ? data.cover : ''" />
+        </div>
+        <div class="content-wrapper">
+          <div class="content-title">{{ data ? data.title : "" }}</div>
+          <div class="content-author sub-title-medium">
+            {{ data ? data.author : "" }}
+          </div>
+          <div class="content-category">{{ categoryText() }}</div>
+        </div>
+        <div class="read-btn" @click.stop="showBookDetail(data)">
+          {{ $t("home.readNow") }}
+        </div>
+      </div>
+    </div>
     <div class="close-btn-wrapper" @click="close">
       <span class="icon-close"></span>
     </div>
@@ -29,21 +54,26 @@
 
 <script>
 import { storeHomeMixin } from "../../utils/mixin";
-import { flapCardList } from "../../utils/store";
+import { flapCardList, categoryText } from "../../utils/store";
 export default {
   mixins: [storeHomeMixin],
+  props: {
+    data: Object,
+  },
   data() {
     return {
       flapCardList,
       front: 0,
       back: 1,
       intervalTime: 25,
+      runFlapCardAnimation: false,
+      runBookCardAnimation: false,
     };
   },
   watch: {
     flapCardVisible(v) {
       if (v) {
-        this.startFlapCardAnimation();
+        this.runAnimation();
       }
     },
   },
@@ -148,14 +178,43 @@ export default {
         this.rotate(index, "front");
         this.rotate(index, "back");
       });
+      this.runBookCardAnimation = false;
+      this.runFlapCardAnimation = false;
     },
     stopAnimation() {
       if (this.task) {
         // 关闭定时任务
         clearInterval(this.task);
       }
+      if (this.timeout) {
+        clearTimeout(this.timeout);
+      }
+      if (this.timeout2) {
+        clearTimeout(this.timeout2);
+      }
       this.reset();
     },
+    runAnimation() {
+      this.runFlapCardAnimation = true;
+      this.timeout = setTimeout(() => {
+        this.startFlapCardAnimation();
+      }, 300);
+      this.timeout2 = setTimeout(() => {
+        this.stopAnimation();
+        this.runBookCardAnimation = true;
+      }, 2500);
+    },
+    categoryText() {
+      // 会被调用两次，判断data请求到之后再打印
+      if (this.data) {
+        return categoryText(this.data.category, this);
+      } else {
+        return "";
+      }
+    },
+  },
+  mounted() {
+    console.log(this.data);
   },
 };
 </script>
@@ -175,9 +234,30 @@ export default {
     height: px2rem(64);
     border-radius: px2rem(5);
     background: white;
-    // &.animation {
-    //   animation: flap-card-move 0.3s ease-in;
-    // }
+    transform: scale(0);
+    opacity: 0;
+    &.animation {
+      // both让主体维持在动画执行完毕后的状态而不回到初始状态
+      animation: flap-card-move 0.3s ease-in both;
+    }
+    @keyframes flap-card-move {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2);
+        opacity: 1;
+      }
+      75% {
+        transform: scale(0.9);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
     .flap-card {
       width: px2rem(48);
       height: px2rem(48);
@@ -204,6 +284,78 @@ export default {
           background-position: center left;
           transform-origin: left;
         }
+      }
+    }
+  }
+  .book-card {
+    position: relative;
+    width: 65%;
+    max-width: px2rem(400);
+    box-sizing: border-box;
+    border-radius: px2rem(15);
+    background: white;
+    &.animation {
+      animation: scale 0.3s ease-in both;
+      @keyframes scale {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    }
+    .book-card-wrapper {
+      width: 100%;
+      height: 100%;
+      margin-bottom: px2rem(30);
+      @include columnTop;
+      .img-wrapper {
+        width: 100%;
+        margin-top: px2rem(20);
+        @include center;
+        .img {
+          width: px2rem(90);
+          height: px2rem(130);
+        }
+      }
+      .content-wrapper {
+        padding: 0 px2rem(20);
+        margin-top: px2rem(20);
+        .content-title {
+          color: #333;
+          font-weight: bold;
+          font-size: px2rem(18);
+          line-height: px2rem(20);
+          max-height: px2rem(40);
+          text-align: center;
+          @include ellipsis2(2);
+        }
+        .content-author {
+          margin-top: px2rem(10);
+          text-align: center;
+        }
+        .content-category {
+          color: #999;
+          font-size: px2rem(14);
+          margin-top: px2rem(10);
+          text-align: center;
+        }
+      }
+      .read-btn {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        z-index: 1100;
+        width: 100%;
+        border-radius: 0 0 px2rem(15) px2rem(15);
+        padding: px2rem(15) 0;
+        text-align: center;
+        color: white;
+        font-size: px2rem(14);
+        background: rgb(102, 147, 243);
       }
     }
   }

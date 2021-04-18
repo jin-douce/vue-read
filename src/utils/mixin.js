@@ -15,7 +15,17 @@ export const storeHomeMixin = {
       'setOffsetY',
       'setHotSearchOffsetY',
       'setFlapCardVisible'
-    ])
+    ]),
+    showBookDetail(book){
+      // 路由跳转
+      this.$router.push({
+        path: '/store/detail',
+        query: {
+          fileName: book.fileName,
+          category: book.categoryText
+        }
+      })
+    }
   }
 }
 export const ebookMixin = {

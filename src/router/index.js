@@ -26,12 +26,20 @@ export default new VueRouter({
       redirect: '/store/home',
       children: [
         {
-          // 使用相对路径
+          // 使用相对路径，会拼接在父级路径后面
           path: 'home',
           component: () => import('../views/store/StoreHome.vue'),
+        },
+        {
+          path: 'list',
+          component: () => import('../views/store/StoreList.vue')
+        },
+        {
+          path: 'detail',
+          component: () => import('../views/store/StoreDetail.vue')
         }
       ]
-    }
+    },
   ]
 })
 
