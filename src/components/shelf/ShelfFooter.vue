@@ -7,11 +7,27 @@
       @click="onTabClick(item)"
     >
       <div class="shelf-footer-tab" :class="{ 'is-selected': isSelected }">
-        <div class="icon-private tab-icon" v-if="item.index === 1"></div>
-        <div class="icon-download tab-icon" v-if="item.index === 2"></div>
+        <div
+          class="icon-private tab-icon"
+          v-if="item.index === 1 && !isPrivate"
+        ></div>
+        <div
+          class="icon-private-see tab-icon"
+          v-if="item.index === 1 && isPrivate"
+        ></div>
+        <div
+          class="icon-download tab-icon"
+          v-if="item.index === 2 && !isDownload"
+        ></div>
+        <div
+          class="icon-download-remove tab-icon"
+          v-if="item.index === 2 && isDownload"
+        ></div>
         <div class="icon-move tab-icon" v-if="item.index === 3"></div>
         <div class="icon-shelf tab-icon" v-if="item.index === 4"></div>
-        <div class="tab-text">{{ item.label }}</div>
+        <div class="tab-text" :class="{ 'remove-text': item.index === 4 }">
+          {{ label(item) }}
+        </div>
       </div>
     </div>
   </div>
@@ -19,6 +35,9 @@
 
 <script>
 import { storeShelfMixin } from "../../utils/mixin";
+import { saveBookShelf, removeLocalStorage } from "../../utils/localStorage";
+import { removeLocalForage } from "../../utils/localForage";
+import { download } from "../../api/store";
 export default {
   mixins: [storeShelfMixin],
   computed: {
@@ -47,9 +66,238 @@ export default {
         },
       ];
     },
+    isPrivate() {
+      if (!this.isSelected) {
+        return false;
+      } else {
+        // 选中的每一本都是private状态，则为true，否则为false
+        return this.shelfSelected.every((item) => item.private);
+      }
+    },
+    isDownload() {
+      if (!this.isSelected) {
+        return false;
+      } else {
+        return this.shelfSelected.every((item) => item.cache);
+      }
+    },
+  },
+  data() {
+    return {
+      popupMenu: null,
+    };
   },
   methods: {
-    onTabClick(item) {},
+    async downloadSelectedBook() {
+      for (let i = 0; i < this.shelfSelected.length; i++) {
+        await this.downloadBook(this.shelfSelected[i]).then((book) => {
+          book.cache = true;
+        });
+      }
+    },
+    downloadBook(book) {
+      let text = "";
+      const toast = this.toast({
+        text,
+      });
+      toast.continueShow();
+      return new Promise((resolve, reject) => {
+        download(
+          book,
+          (book) => {
+            toast.remove();
+            console.log("下载完毕");
+            resolve(book);
+          },
+          reject,
+          (progressEvent) => {
+            console.log("进度", progressEvent.loaded);
+            const progress =
+              Math.floor((progressEvent.loaded / progressEvent.total) * 100) +
+              "%";
+            const text = this.$t("shelf.progressDownload").replace(
+              "$1",
+              `${book.fileName}.epub(${progress})`
+            );
+            toast.updateText(text);
+            console.log(text);
+          }
+        );
+      });
+    },
+    removeSelectedBook() {
+      Promise.all(this.shelfSelected.map((book) => this.removeBook(book))).then(
+        (books) => {
+          books.map((book) => {
+            book.cache = false;
+          });
+          saveBookShelf(this.shelfList);
+          this.simpleToast(this.$t("shelf.removeDownloadSuccess"));
+        }
+      );
+    },
+    removeBook(book) {
+      return new Promise((resolve, reject) => {
+        removeLocalStorage(`${book.categoryText}/${book.fileName}-info`);
+        removeLocalForage(`${book.fileName}`);
+        resolve(book);
+      });
+    },
+    onComplete() {
+      // 隐藏弹窗；取消编辑状态；保存修改后的bookList
+      this.hidePopup();
+      this.setIsEditMode(false);
+      // shelfSelected是对象引用，它的变化会引起bookList的变化
+      saveBookShelf(this.bookList);
+    },
+    hidePopup() {
+      this.popupMenu.hide();
+    },
+    setPrivate() {
+      // 改变private状态
+      let isPrivate;
+      if (this.isPrivate) {
+        isPrivate = false;
+      } else {
+        isPrivate = true;
+      }
+      this.shelfSelected.forEach((book) => {
+        book.private = isPrivate;
+      });
+      this.onComplete();
+      if (isPrivate) {
+        // 成功设置为private
+        this.simpleToast(this.$t("shelf.setPrivateSuccess"));
+      } else {
+        this.simpleToast(this.$t("shelf.closePrivateSuccess"));
+      }
+    },
+    async setDownload() {
+      this.onComplete();
+      if (this.isDownload) {
+        this.removeSelectedBook();
+      } else {
+        // 异步方法
+        await this.downloadSelectedBook();
+        saveBookShelf(this.shelfList);
+        this.simpleToast(this.$t("shelf.setDownloadSuccess"));
+      }
+    },
+    removeSelected() {
+      this.shelfSelected.forEach((selected) => {
+        this.setShelfList(this.shelfList.filter((book) => book !== selected));
+      });
+      this.setShelfSelected([]);
+      this.onComplete();
+    },
+    showPrivate() {
+      this.popupMenu = this.popup({
+        title: this.isPrivate
+          ? this.$t("shelf.closePrivateTitle")
+          : this.$t("shelf.setPrivateTitle"),
+        btn: [
+          {
+            text: this.isPrivate
+              ? this.$t("shelf.close")
+              : this.$t("shelf.open"),
+            click: () => {
+              this.setPrivate();
+            },
+          },
+          {
+            text: this.$t("shelf.cancel"),
+            click: () => {
+              this.hidePopup();
+            },
+          },
+        ],
+      }).show();
+    },
+    showDownload() {
+      this.popupMenu = this.popup({
+        title: this.isDownload
+          ? this.$t("shelf.removeDownloadTitle")
+          : this.$t("shelf.setDownloadTitle"),
+        btn: [
+          {
+            text: this.isDownload
+              ? this.$t("shelf.delete")
+              : this.$t("shelf.open"),
+            click: () => {
+              this.setDownload();
+            },
+          },
+          {
+            text: this.$t("shelf.cancel"),
+            click: () => {
+              this.hidePopup();
+            },
+          },
+        ],
+      }).show();
+    },
+    showRemove() {
+      let title;
+      if (this.shelfSelected.length === 1) {
+        title = this.$t("shelf.removeBookTitle").replace(
+          "$1",
+          `《${this.shelfSelected[0].title}》`
+        );
+      } else {
+        title = this.$t("shelf.removeBookTitle").replace(
+          "$1",
+          this.$t("shelf.selectedBooks")
+        );
+      }
+      this.popupMenu = this.popup({
+        title: title,
+        btn: [
+          {
+            text: this.$t("shelf.removeBook"),
+            type: "danger",
+            click: () => {
+              this.removeSelected();
+            },
+          },
+          {
+            text: this.$t("shelf.cancel"),
+            click: () => {
+              this.hidePopup();
+            },
+          },
+        ],
+      }).show();
+    },
+    onTabClick(item) {
+      if (!this.isSelected) {
+        return;
+      }
+      switch (item.index) {
+        case 1:
+          this.showPrivate();
+          break;
+        case 2:
+          this.showDownload();
+          break;
+        case 3:
+          break;
+        case 4:
+          this.showRemove();
+          break;
+        default:
+          break;
+      }
+    },
+    label(item) {
+      switch (item.index) {
+        case 1:
+          return this.isPrivate ? item.label2 : item.label;
+        case 2:
+          return this.isDownload ? item.label2 : item.label;
+        default:
+          return item.label;
+      }
+    },
   },
 };
 </script>
@@ -86,6 +334,12 @@ export default {
         margin-top: px2rem(5);
         font-size: px2rem(12);
         color: #666;
+        &.remove-text {
+          color: red;
+        }
+      }
+      .icon-shelf {
+        color: red;
       }
     }
   }

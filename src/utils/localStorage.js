@@ -10,7 +10,7 @@ export function getLocalStorage(key){
     return LocalStorage.get(key)
 }
 
-export function remove(key){
+export function removeLocalStorage(key){
     return LocalStorage.delete(key)
 }
 
@@ -129,4 +129,12 @@ export function getHome() {
     }
     book[key] = value
     setLocalStorage(`${fileName}-info`, book)
+  }
+
+  export function getBookShelf(){
+    return getLocalStorage('shelf')
+  }
+
+  export function saveBookShelf(shelf){
+    return setLocalStorage('shelf', shelf)
   }
