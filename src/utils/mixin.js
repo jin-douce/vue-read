@@ -1,6 +1,31 @@
 import { mapGetters, mapActions } from 'vuex'
 import { getBookmark, saveLocation } from './localStorage'
 import { themeList, addCss, removeAllCss, getReadTimeByMinute } from './book'
+import { gotoBookDetail } from './store'
+
+export const storeShelfMixin = {
+  computed: {
+    ...mapGetters([
+      'isEditMode',
+      'shelfList',
+      'shelfSelected',
+      'shelfTitleVisible',
+      'offsetY'
+    ])
+  },
+  methods: {
+    ...mapActions([
+      'setIsEditMode',
+      'setShelfList',
+      'setShelfSelected',
+      'setShelfTitleVisible',
+      'setOffsetY'
+    ]),
+    showBookDetail(book){
+      gotoBookDetail(this, book)
+    }
+  }
+}
 
 export const storeHomeMixin = {
   computed: {
@@ -18,13 +43,7 @@ export const storeHomeMixin = {
     ]),
     showBookDetail(book){
       // 路由跳转
-      this.$router.push({
-        path: '/store/detail',
-        query: {
-          fileName: book.fileName,
-          category: book.categoryText
-        }
-      })
+      gotoBookDetail(this, book)
     }
   }
 }

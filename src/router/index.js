@@ -23,10 +23,15 @@ export default new VueRouter({
     {
       path: '/store',
       component: () => import('../views/store/index.vue'),
-      redirect: '/store/home',
+      redirect: '/store/shelf',
       children: [
         {
+          path: 'shelf',
+          component: () => import('../views/store/StoreShelf.vue')
+        },
+        {
           // 使用相对路径，会拼接在父级路径后面
+          
           path: 'home',
           component: () => import('../views/store/StoreHome.vue'),
         },
