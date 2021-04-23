@@ -1,6 +1,6 @@
 <template>
   <div class="store-shelf">
-    <shelf-title :title="$t('shelf.title')"></shelf-title>
+    <shelf-title :title="shelfCategory.title"></shelf-title>
     <scroll
       class="store-shelf-scroll-wrapper"
       :bottom="scrollBottom"
@@ -8,8 +8,7 @@
       @onScroll="onScroll"
       ref="scroll"
     >
-      <shelf-search></shelf-search>
-      <shelf-list :data="shelfList"></shelf-list>
+      <shelf-list :top="42" :data="shelfCategory.itemList"></shelf-list>
     </scroll>
     <shelf-footer></shelf-footer>
   </div>
@@ -18,7 +17,6 @@
 <script>
 import Scroll from "../../components/common/Scroll";
 import ShelfTitle from "../../components/shelf/ShelfTitle";
-import ShelfSearch from "../../components/shelf/ShelfSearch";
 import ShelfList from "../../components/shelf/ShelfList";
 import ShelfFooter from "../../components/shelf/ShelfFooter";
 import { storeShelfMixin } from "../../utils/mixin";
@@ -28,7 +26,6 @@ export default {
   components: {
     ShelfTitle,
     Scroll,
-    ShelfSearch,
     ShelfList,
     ShelfFooter,
   },
@@ -52,9 +49,8 @@ export default {
     },
   },
   mounted() {
-    this.getShelfList();
-    this.setShelfCategory([]);
-    this.setCurrentType(1);
+    this.getCategoryList(this.$route.query.title);
+    this.setCurrentType(2);
   },
 };
 </script>

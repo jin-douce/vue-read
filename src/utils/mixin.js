@@ -1,7 +1,8 @@
 import { mapGetters, mapActions } from 'vuex'
-import { getBookmark, saveLocation } from './localStorage'
+import { getBookmark, saveLocation, getBookShelf, saveBookShelf } from './localStorage'
 import { themeList, addCss, removeAllCss, getReadTimeByMinute } from './book'
-import { gotoBookDetail } from './store'
+import { gotoBookDetail, appendAddToShelf,removeAddFromShelf, computeId } from './store'
+import { shelf } from "../api/store";
 
 export const storeShelfMixin = {
   computed: {
@@ -10,7 +11,9 @@ export const storeShelfMixin = {
       'shelfList',
       'shelfSelected',
       'shelfTitleVisible',
-      'offsetY'
+      'offsetY',
+      'shelfCategory',
+      'currentType'
     ])
   },
   methods: {
@@ -19,10 +22,64 @@ export const storeShelfMixin = {
       'setShelfList',
       'setShelfSelected',
       'setShelfTitleVisible',
-      'setOffsetY'
+      'setOffsetY',
+      'setShelfCategory',
+      'setCurrentType'
     ]),
     showBookDetail(book){
       gotoBookDetail(this, book)
+    },
+    getCategoryList(title){
+      this.getShelfList().then(() => {
+        const categoryList = this.shelfList.filter(
+          book => book.type === 2 && book.title === title)[0]
+          this.setShelfCategory(categoryList)
+      })
+    },
+    getShelfList() {
+      let shelfList = getBookShelf();
+      // 如果不存在，则获取接口数据
+      if (!shelfList) {
+        shelf().then((response) => {
+          if (
+            response.status === 200 &&
+            response.data &&
+            response.data.bookList
+          ) {
+            shelfList = appendAddToShelf(response.data.bookList);
+            // 保存到LocalStorage
+            saveBookShelf(shelfList);
+            // 保存到vuex,返回promise对象
+            return this.setShelfList(shelfList);
+          }
+        });
+      } else {
+        // 如果已存在，不再重新获取，进行缓存
+        return this.setShelfList(shelfList);
+      }
+    },
+    moveOutOfGroup(f){
+      this.setShelfList(
+        this.shelfList.map((book) => {
+          if (book.type === 2 && book.itemList) {
+            // 保留为选中的图书
+            book.itemList = book.itemList.filter(
+              (subBook) => !subBook.selected
+            );
+          }
+          return book;
+        })
+      ).then(() => {
+        let list = [].concat(
+          removeAddFromShelf(this.shelfList),
+          ...this.shelfSelected
+        );
+        list = computeId(appendAddToShelf(list));
+        this.setShelfList(list).then(() => {
+          this.simpleToast(this.$t("shelf.moveBookOutSuccess"));
+          if(f) f()
+        });
+      });
     }
   }
 }

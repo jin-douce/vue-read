@@ -56,11 +56,11 @@ const actions = {
   setOffsetY({ commit }, offsetY) {
     return commit('SET_OFFSETY', offsetY)
   },
-  setHotSearchOffsetY({ commit }, offsetY){
+  setHotSearchOffsetY({ commit }, offsetY) {
     return commit('SET_HOT_SEARCH_OFFSETY', offsetY)
   },
-  setFlapCardVisible({ commit }, visible){
-    return commit('SET_FLAP_CARD_OFFSETY', visible)
+  setFlapCardVisible({ commit }, flapCardVisible) {
+    return commit('SET_FLAP_CARD_VISIBLE', flapCardVisible)
   },
   setIsEditMode({ commit }, isEditMode) {
     return commit('SET_IS_EDIT_MODE', isEditMode)
@@ -73,6 +73,12 @@ const actions = {
   },
   setShelfTitleVisible({ commit }, visible) {
     return commit('SET_SHELF_TITLE_VISIBLE', visible)
+  },
+  setShelfCategory({ commit }, category) {
+    return commit('SET_SHELF_CATEGORY', category)
+  },
+  setCurrentType({ commit }, type) {
+    return commit('SET_CURRENT_TYPE', type)
   }
 }
 

@@ -35,7 +35,11 @@
 
 <script>
 import { storeShelfMixin } from "../../utils/mixin";
-import { saveBookShelf, removeLocalStorage } from "../../utils/localStorage";
+import {
+  getBookShelf,
+  saveBookShelf,
+  removeLocalStorage,
+} from "../../utils/localStorage";
 import { removeLocalForage } from "../../utils/localForage";
 import { download } from "../../api/store";
 export default {
@@ -132,6 +136,7 @@ export default {
             book.cache = false;
           });
           saveBookShelf(this.shelfList);
+
           this.simpleToast(this.$t("shelf.removeDownloadSuccess"));
         }
       );
@@ -175,6 +180,7 @@ export default {
     async setDownload() {
       this.onComplete();
       if (this.isDownload) {
+        // 删除已下载的书
         this.removeSelectedBook();
       } else {
         // 异步方法
@@ -184,11 +190,18 @@ export default {
       }
     },
     removeSelected() {
+      // 移出书架
+      console.log("移除前：", this.shelfList);
       this.shelfSelected.forEach((selected) => {
         this.setShelfList(this.shelfList.filter((book) => book !== selected));
       });
       this.setShelfSelected([]);
       this.onComplete();
+      console.log(this.shelfList);
+      saveBookShelf(this.bookList);
+      // 保存未成功，get返回的是null
+      let ss = getBookShelf();
+      console.log("缓存", ss);
     },
     showPrivate() {
       this.popupMenu = this.popup({
@@ -280,6 +293,7 @@ export default {
           this.showDownload();
           break;
         case 3:
+          this.dialog().show();
           break;
         case 4:
           this.showRemove();

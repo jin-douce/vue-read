@@ -30,6 +30,10 @@ export default new VueRouter({
           component: () => import('../views/store/StoreShelf.vue')
         },
         {
+          path: 'category',
+          component: () => import('../views/store/StoreCategory.vue')
+        },
+        {
           // 使用相对路径，会拼接在父级路径后面
           
           path: 'home',
