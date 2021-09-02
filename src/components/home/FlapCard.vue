@@ -1,16 +1,7 @@
 <template>
   <div class="flap-card-wrapper" v-show="flapCardVisible">
-    <div
-      class="flap-card-bg"
-      :class="{ animation: runFlapCardAnimation }"
-      v-show="runFlapCardAnimation"
-    >
-      <div
-        class="flap-card"
-        v-for="(item, index) in flapCardList"
-        :key="index"
-        :style="{ zIndex: item.zIndex }"
-      >
+    <div class="flap-card-bg" :class="{ animation: runFlapCardAnimation }" v-show="runFlapCardAnimation">
+      <div class="flap-card" v-for="(item, index) in flapCardList" :key="index" :style="{ zIndex: item.zIndex }">
         <div class="flap-card-circle">
           <div
             class="flap-card-semi-circle flap-card-semi-circle-left"
@@ -25,25 +16,16 @@
         </div>
       </div>
     </div>
-    <div
-      class="book-card"
-      :class="{ animation: runBookCardAnimation }"
-      v-show="runBookCardAnimation"
-    >
+    <div class="book-card"  :class="{ animation: runBookCardAnimation }" v-show="runBookCardAnimation" >
       <div class="book-card-wrapper">
         <div class="img-wrapper">
-          <img class="img" :src="data ? data.cover : ''" />
+          <img class="img" :src="data ? data.images : ''" />
         </div>
         <div class="content-wrapper">
-          <div class="content-title">{{ data ? data.title : "" }}</div>
-          <div class="content-author sub-title-medium">
-            {{ data ? data.author : "" }}
-          </div>
-          <div class="content-category">{{ categoryText() }}</div>
+          <div class="content-title">{{ data ? data.name : "" }}</div>
+          <div class="content-author sub-title-medium">{{ data ? data.author : "" }}</div>
         </div>
-        <div class="read-btn" @click.stop="showBookDetail(data)">
-          {{ $t("home.readNow") }}
-        </div>
+        <div class="read-btn" @click.stop="showDetail(data)">立即阅读</div>
       </div>
     </div>
     <div class="close-btn-wrapper" @click="close">
@@ -54,7 +36,7 @@
 
 <script>
 import { storeHomeMixin } from "../../utils/mixin";
-import { flapCardList, categoryText } from "../../utils/store";
+import { flapCardList } from "../../utils/store";
 export default {
   mixins: [storeHomeMixin],
   props: {
@@ -80,6 +62,13 @@ export default {
   methods: {
     close() {
       this.stopAnimation();
+      this.setFlapCardVisible(false);
+    },
+    showDetail(book){
+      this.$router.push({
+        path: '/store/detail',
+        query: { bookId: book.id }
+      })
       this.setFlapCardVisible(false);
     },
     semiCircleStyle(item, dir) {
@@ -203,18 +192,10 @@ export default {
         this.stopAnimation();
         this.runBookCardAnimation = true;
       }, 2500);
-    },
-    categoryText() {
-      // 会被调用两次，判断data请求到之后再打印
-      if (this.data) {
-        return categoryText(this.data.category, this);
-      } else {
-        return "";
-      }
-    },
+    }
   },
   mounted() {
-    console.log(this.data);
+    // console.log(this.data);
   },
 };
 </script>

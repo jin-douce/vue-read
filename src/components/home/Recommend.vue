@@ -1,15 +1,19 @@
 <template>
   <div class="recommend">
-    <title-view :label="$t('home.recommend')" :btn="$t('home.seeAll')"></title-view>
+    <title-view label="热门小说" v-if="type===1"></title-view>
+    <title-view label="精品推荐" v-else></title-view>
     <div class="recommend-list">
-      <div class="recommend-item" v-for="(item, index) in data" :key="index" @click="showBookDetail(item)">
-        <div class="img-wrapper">
-          <img class="img" :src="item.cover">
-        </div>
-        <div class="content-wrapper">
-          <div class="title title-medium" ref="title">{{item.title}}</div>
-          <div class="num sub-title" ref="num">{{$t('home.readers').replace('$1', item.readers)}}</div>
-        </div>
+      <div class="recommend-item" v-for="(item, index) in data" :key="index">
+        <router-link :to="{path:'/store/detail', query:{bookId: item.id}}">
+          <div class="img-wrapper">
+            <img class="img" :src="item.images">
+          </div>
+          <div class="content-wrapper">
+            <div class="title title-medium" ref="title">{{item.name}}</div>
+            <div class="num sub-title" ref="num">{{item.author}}</div>
+          </div>
+        </router-link>
+        
       </div>
     </div>
   </div>
@@ -21,11 +25,13 @@
 
   export default {
     mixins: [storeHomeMixin],
+    
     components: {
       TitleView
     },
     props: {
-      data: Array
+      data: Array,
+      type: Number
     }
   }
 </script>

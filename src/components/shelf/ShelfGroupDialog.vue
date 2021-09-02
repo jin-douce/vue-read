@@ -1,42 +1,34 @@
+<!-- 移动分组时的弹出框 -->
 <template>
   <ebook-dialog :title="title" ref="dialog">
     <!-- 替换第一个slot -->
+        <!-- 1.移动分组 -->
     <div class="dialog-list-wrapper" v-if="!ifNewGroup">
       <template v-for="(item, index) in categoryList">
-        <div
-          class="dialog-list-item"
+            <!-- 所有分组列表 -->
+        <div class="dialog-list-item"
           :class="{ 'is-add': item.edit ? item.edit === 1 : false }"
-          :key="index"
-          @click="onGroupClick(item)"
+          :key="index" @click="onGroupClick(item)"
           v-if="(item.edit === 2 && isInGroup) || item.edit !== 2 || !item.edit"
         >
           <div class="dialog-list-item-text">{{ item.title }}</div>
-          <div
-            class="dialog-list-icon-wrapper"
-            v-if="isInGroup && shelfCategory.id === item.id"
-          >
+            <!-- 当前所在分组 -->
+          <div class="dialog-list-icon-wrapper" v-if="isInGroup && shelfCategory.ids === item.ids">
             <span class="icon-selected"></span>
           </div>
         </div>
       </template>
     </div>
+          <!-- 2.新建分组 -->
     <div class="dialog-new-group-wrapper" v-else>
       <div class="dialog-input-title-wrapper">
-        <span class="dialog-input-title">{{ $t("shelf.groupName") }}</span>
+        <span>分组名</span>
       </div>
       <div class="dialog-input-wrapper">
         <div class="dialog-input-inner-wrapper">
-          <input
-            type="text"
-            class="dialog-input"
-            v-model="newGroupName"
-            ref="dialogInput"
-          />
-          <div
-            class="dialog-input-clear-wrapper"
-            @click="clear"
-            v-show="newGroupName && newGroupName.length > 0"
-          >
+          <input type="text" class="dialog-input" v-model="newGroupName" ref="dialogInput"/>
+          <div class="dialog-input-clear-wrapper" @click="clear"
+            v-show="newGroupName && newGroupName.length > 0">
             <span class="icon-close-circle-fill"></span>
           </div>
         </div>
@@ -44,14 +36,10 @@
     </div>
     <!-- 替换第二个slot -->
     <div slot="btn" class="group-dialog-btn-wrapper">
-      <div class="dialog-btn" @click="hide">{{ $t("shelf.cancel") }}</div>
-      <div
-        class="dialog-btn"
-        @click="createNewGroup"
-        :class="{ 'is-empty': newGroupName && newGroupName.length === 0 }"
-        v-if="ifNewGroup"
-      >
-        {{ $t("shelf.confirm") }}
+      <div class="dialog-btn" @click="hide">取消</div>
+      <div class="dialog-btn" @click="createNewGroup" v-if="ifNewGroup"
+       :class="{ 'is-empty': newGroupName && newGroupName.length === 0 }">
+       确定
       </div>
     </div>
   </ebook-dialog>
@@ -60,11 +48,7 @@
 <script>
 import EbookDialog from "../common/Dialog";
 import { storeShelfMixin } from "../../utils/mixin";
-import {
-  removeAddFromShelf,
-  appendAddToShelf,
-  computeId,
-} from "../../utils/store";
+import { removeAddFromShelf, appendAddToShelf, computeId,} from "../../utils/store";
 import { saveBookShelf } from "../../utils/localStorage";
 
 export default {
@@ -79,7 +63,7 @@ export default {
       default: false,
     },
     groupName: String,
-  },
+  }, 
   computed: {
     isInGroup() {
       return this.currentType === 2;
@@ -87,25 +71,27 @@ export default {
     defaultCategory() {
       return [
         {
-          title: this.$t("shelf.newGroup"),
+          title: '新建分组',
           edit: 1,
         },
         {
-          title: this.$t("shelf.groupOut"),
+          title: '移出分组',
           edit: 2,
         },
       ];
     },
+    // 所有分组
     category() {
-      return this.shelfList.filter((item) => item.type === 2);
+      return this.shelfList.filter((item) => item.types === 2);
     },
+    // 所有分组合并上新建和移出选项
     categoryList() {
       return [...this.defaultCategory, ...this.category];
     },
     title() {
       return !this.ifNewGroup
-        ? this.$t("shelf.moveBook")
-        : this.$t("shelf.newGroup");
+        ? '书籍分组'
+        : '新建分组';
     },
   },
   data() {
@@ -128,19 +114,18 @@ export default {
       }, 200);
     },
     onGroupClick(item) {
-      if (item.edit && item.edit === 1) {
+      if (item.edit && item.edit === 1) { //点击了新建分组
         this.ifNewGroup = true;
-      } else if (item.edit && item.edit === 2) {
+      } else if (item.edit && item.edit === 2) { //点击了移出分组
         this.moveOutFromGroup(item);
       } else {
-        this.moveToGroup(item);
+        this.moveToGroup(item); //将所有选中的书籍移入被点击的分组
       }
     },
     clear() {
       this.newGroupName = "";
     },
     moveToGroup(group) {
-      // 加入分组
       this.setShelfList(
         this.shelfList.filter((book) => {
           if (book.itemList) {
@@ -158,10 +143,10 @@ export default {
         }
         // 对分组重新排序
         group.itemList.forEach((item, index) => {
-          item.id = index + 1;
+          item.ids = index + 1;
         });
         this.simpleToast(
-          this.$t("shelf.moveBookInSuccess").replace("$1", group.title)
+          '成功移入$1'.replace("$1", group.title)
         );
         // 保存数据
         this.onComplete();
@@ -175,15 +160,17 @@ export default {
         return;
       }
       if (this.showNewGroup) {
+        // 修改分组名称
         this.shelfCategory.title = this.newGroupName;
         this.onComplete();
       } else {
+        // 创建新分组
         const group = {
-          id: this.shelfList[this.shelfList.length - 2].id + 1,
+          ids: this.shelfList[this.shelfList.length - 2].ids + 1,
           itemList: [],
           selected: false,
           title: this.newGroupName,
-          type: 2,
+          types: 2,
         };
         let list = removeAddFromShelf(this.shelfList);
         list.push(group);
@@ -241,7 +228,7 @@ export default {
   padding: 0 px2rem(20);
   box-sizing: border-box;
   .dialog-input-title-wrapper {
-    font-size: px2rem(10);
+    font-size: px2rem(15);
     margin-top: px2rem(20);
   }
   .dialog-input-wrapper {
@@ -253,7 +240,7 @@ export default {
       width: 100%;
       padding: px2rem(10) 0;
       box-sizing: border-box;
-      border-bottom: px2rem(1) solid #eee;
+      border-bottom: px2rem(1) solid rgb(202, 200, 200);
       font-size: px2rem(14);
       color: #666;
       .dialog-input {

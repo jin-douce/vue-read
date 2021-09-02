@@ -1,7 +1,30 @@
+import { getLocalStorage, setLocalStorage, getBookShelf, saveBookShelf } from './localStorage'
+
+
+// 加入书架
+export function addToShelf(book){
+  let shelfList = getBookShelf()
+  shelfList = removeAddFromShelf(shelfList) //去掉空的
+  book.types = 1
+  shelfList.push(book)
+  shelfList = computeId(shelfList)
+  shelfList = appendAddToShelf(shelfList) //再加上空的
+  saveBookShelf( shelfList) //保存到localStorage
+  
+}
+// 从书架移除
+export function removeFromBookShelf(book){
+  return getBookShelf().filter(item => {
+    if(item.itemList){
+      item.itemList = removeAddFromShelf(item.itemList)
+    }
+    return item.name !== book.name
+  })
+}
 export function computeId(list){
   return list.map((book, index) => {
-    if(book.type !== 3){
-      book.id = index + 1
+    if(book.types !== 3){
+      book.ids = index + 1
       if(book.itemList){
         book.itemList = computeId(book.itemList)
       }
@@ -13,10 +36,7 @@ export function computeId(list){
 export function gotoBookDetail(vue, book){
   vue.$router.push({
     path: '/store/detail',
-    query: {
-      fileName: book.fileName,
-      category: book.categoryText
-    }
+    query: { bookId: book.id }
   })
 }
 export function gotoStoreHome(vue){
@@ -27,14 +47,14 @@ export function gotoStoreHome(vue){
 
 export function appendAddToShelf(list){
   list.push({
-    id: -1,
-    type: 3
+    ids: -1,
+    types: 3
   })
   return list
 }
 
 export function removeAddFromShelf(list){
-  return list.filter(item => item.type !== 3)
+  return list.filter(item => item.types !== 3)
 }
 
 export const flapCardList = [
@@ -96,123 +116,35 @@ export const flapCardList = [
 ]
 
 export const categoryList = {
-  'ComputerScience': 1,
-  'SocialSciences': 2,
-  'Economics': 3,
-  'Education': 4,
-  'Engineering': 5,
-  'Environment': 6,
-  'Geography': 7,
-  'History': 8,
-  'Laws': 9,
-  'LifeSciences': 10,
-  'Literature': 11,
-  'Biomedicine': 12,
-  'BusinessandManagement': 13,
-  'EarthSciences': 14,
-  'MaterialsScience': 15,
-  'Mathematics': 16,
-  'MedicineAndPublicHealth': 17,
-  'Philosophy': 18,
-  'Physics': 19,
-  'PoliticalScienceAndInternationalRelations': 20,
-  'Psychology': 21,
-  'Statistics': 22
-}
-export function getCategoryName(id) {
-  switch (id) {
-    case 1:
-      return 'ComputerScience'
-    case 2:
-      return 'SocialSciences'
-    case 3:
-      return 'Economics'
-    case 4:
-      return 'Education'
-    case 5:
-      return 'Engineering'
-    case 6:
-      return 'Environment'
-    case 7:
-      return 'Geography'
-    case 8:
-      return 'History'
-    case 9:
-      return 'Laws'
-    case 10:
-      return 'LifeSciences'
-    case 11:
-      return 'Literature'
-    case 12:
-      return 'Biomedicine'
-    case 13:
-      return 'BusinessandManagement'
-    case 14:
-      return 'EarthSciences'
-    case 15:
-      return 'MaterialsScience'
-    case 16:
-      return 'Mathematics'
-    case 17:
-      return 'MedicineAndPublicHealth'
-    case 18:
-      return 'Philosophy'
-    case 19:
-      return 'Physics'
-    case 20:
-      return 'PoliticalScienceAndInternationalRelations'
-    case 21:
-      return 'Psychology'
-    case 22:
-      return 'Statistics'
-  }
+  '武侠': {
+    typeId: 1,
+    img1:'http://qidian.qpic.cn/qdbimg/349573/3258971/150',
+    img2:'http://qidian.qpic.cn/qdbimg/349573/1003306811/150'
+  },
+  '网游':{
+    typeId: 2,
+    img1:'http://qidian.qpic.cn/qdbimg/349573/1887208/150',
+    img2:'https://img1.baidu.com/it/u=2490823398,3958203158&fm=11&fmt=auto&gp=0.jpg'
+  },
+  '都市': {
+    typeId: 3,
+    img1:'https://img2.baidu.com/it/u=1058255448,2546329895&fm=26&fmt=auto&gp=0.jpg',
+    img2:'https://img1.baidu.com/it/u=1469198532,1738379713&fm=26&fmt=auto&gp=0.jpg'
+  },
+  '历史': {
+    typeId: 4,
+    img1:'https://img0.baidu.com/it/u=1633361218,3733847676&fm=26&fmt=auto&gp=0.jpg',
+    img2:'https://img0.baidu.com/it/u=442248440,1263154732&fm=253&fmt=auto&app=120&f=JPEG?w=411&h=600'
+  },
+  '玄幻': {
+    typeId: 5,
+    img1:'https://img0.baidu.com/it/u=3802571101,3071724873&fm=26&fmt=auto&gp=0.jpg',
+    img2:'https://img2.baidu.com/it/u=2053134301,1117134931&fm=26&fmt=auto&gp=0.jpg'
+  },
+  '其他': {
+    typeId: 6,
+    img1:'https://img0.baidu.com/it/u=1256871257,3654759602&fm=26&fmt=auto&gp=0.jpg',
+    img2:'https://img2.baidu.com/it/u=2513324971,2361514946&fm=26&fmt=auto&gp=0.jpg'
+  }, 
 }
 
-export function categoryText(category, vue) {
-  switch (category) {
-    case 1:
-      return vue.$t('category.computerScience')
-    case 2:
-      return vue.$t('category.socialSciences')
-    case 3:
-      return vue.$t('category.economics')
-    case 4:
-      return vue.$t('category.education')
-    case 5:
-      return vue.$t('category.engineering')
-    case 6:
-      return vue.$t('category.environment')
-    case 7:
-      return vue.$t('category.geography')
-    case 8:
-      return vue.$t('category.history')
-    case 9:
-      return vue.$t('category.laws')
-    case 10:
-      return vue.$t('category.lifeSciences')
-    case 11:
-      return vue.$t('category.literature')
-    case 12:
-      return vue.$t('category.biomedicine')
-    case 13:
-      return vue.$t('category.businessandManagement')
-    case 14:
-      return vue.$t('category.earthSciences')
-    case 15:
-      return vue.$t('category.materialsScience')
-    case 16:
-      return vue.$t('category.mathematics')
-    case 17:
-      return vue.$t('category.medicineAndPublicHealth')
-    case 18:
-      return vue.$t('category.philosophy')
-    case 19:
-      return vue.$t('category.physics')
-    case 20:
-      return vue.$t('category.politicalScienceAndInternationalRelations')
-    case 21:
-      return vue.$t('category.psychology')
-    case 22:
-      return vue.$t('category.statistics')
-  }
-}

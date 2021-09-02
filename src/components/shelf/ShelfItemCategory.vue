@@ -1,4 +1,5 @@
 <template>
+<!-- 书架分组(打开前的小图标) -->
   <div class="shelf-item-category">
     <div class="shelf-item-category-list" v-if="data.itemList.length > 0">
       <div
@@ -6,7 +7,7 @@
         v-for="(item, index) in data.itemList"
         :key="index"
       >
-        <img class="shelf-item-category-img" :src="item.cover" />
+        <img class="shelf-item-category-img" :src="item.images" />
       </div>
     </div>
     <div class="shelf-item-category-bg" v-else>
@@ -14,7 +15,7 @@
     </div>
   </div>
 </template>
-
+ 
 <script>
 export default {
   props: {
@@ -29,6 +30,7 @@ export default {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  border: 1px solid rgb(192, 189, 189);
   .shelf-item-category-list {
     display: flex;
     flex-flow: row wrap;

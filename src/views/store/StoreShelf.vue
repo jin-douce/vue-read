@@ -1,14 +1,9 @@
 <template>
+<!-- 书架页面 -->
   <div class="store-shelf">
-    <shelf-title :title="$t('shelf.title')"></shelf-title>
-    <scroll
-      class="store-shelf-scroll-wrapper"
-      :bottom="scrollBottom"
-      :top="0"
-      @onScroll="onScroll"
-      ref="scroll"
-    >
-      <shelf-search></shelf-search>
+    <shelf-title title="书架"></shelf-title>
+    <scroll class="store-shelf-scroll-wrapper" :bottom="scrollBottom" :top="0"
+      @onScroll="onScroll" ref="scroll">  
       <shelf-list :data="shelfList"></shelf-list>
     </scroll>
     <shelf-footer></shelf-footer>
@@ -18,7 +13,7 @@
 <script>
 import Scroll from "../../components/common/Scroll";
 import ShelfTitle from "../../components/shelf/ShelfTitle";
-import ShelfSearch from "../../components/shelf/ShelfSearch";
+
 import ShelfList from "../../components/shelf/ShelfList";
 import ShelfFooter from "../../components/shelf/ShelfFooter";
 import { storeShelfMixin } from "../../utils/mixin";
@@ -28,7 +23,6 @@ export default {
   components: {
     ShelfTitle,
     Scroll,
-    ShelfSearch,
     ShelfList,
     ShelfFooter,
   },
@@ -53,8 +47,8 @@ export default {
   },
   mounted() {
     this.getShelfList();
-    this.setShelfCategory([]);
-    this.setCurrentType(1);
+    this.setShelfCategory([]); //书架分组初始化为空，即无分组
+    this.setCurrentType(1); // currentType为1，表示当前位于书架，ShelfTitle显示书架
   },
 };
 </script>

@@ -18,21 +18,53 @@ export function clearLocalStorage(key){
     return LocalStorage.clear()
 }
 
+
 export function getHome() {
-    return getLocalStorage('home')
+  return getLocalStorage('home')
+}
+
+export function saveHome(home) {
+  return setLocalStorage('home', home, 1800)
+}
+
+export function getLocale() {
+  return getLocalStorage('locale')
+}
+
+export function saveLocale(locale) {
+  return setLocalStorage('locale', locale)
+}
+
+// 书架
+export function getBookShelf(){
+  return getLocalStorage('shelf')
+}
+
+export function saveBookShelf(shelf){
+  return setLocalStorage('shelf', shelf)
+}
+
+
+
+export function getBookObject(fileName, key) {
+  if (getLocalStorage(`${fileName}-info`)) {
+    return getLocalStorage(`${fileName}-info`)[key]
+  } else {
+    return null
   }
-  
-  export function saveHome(home) {
-    return setLocalStorage('home', home, 1800)
+}
+
+export function setBookObject(fileName, key, value) {
+  let book = {}
+  if (getLocalStorage(`${fileName}-info`)) {
+    book = getLocalStorage(`${fileName}-info`)
   }
-  
-  export function getLocale() {
-    return getLocalStorage('locale')
-  }
-  
-  export function saveLocale(locale) {
-    return setLocalStorage('locale', locale)
-  }
+  book[key] = value
+  setLocalStorage(`${fileName}-info`, book)
+}
+
+
+
   
   export function getLocation(fileName) {
     return getBookObject(fileName, 'location')
@@ -114,27 +146,4 @@ export function getHome() {
     setBookObject(fileName, 'fontSize', fontSize)
   }
   
-  export function getBookObject(fileName, key) {
-    if (getLocalStorage(`${fileName}-info`)) {
-      return getLocalStorage(`${fileName}-info`)[key]
-    } else {
-      return null
-    }
-  }
   
-  export function setBookObject(fileName, key, value) {
-    let book = {}
-    if (getLocalStorage(`${fileName}-info`)) {
-      book = getLocalStorage(`${fileName}-info`)
-    }
-    book[key] = value
-    setLocalStorage(`${fileName}-info`, book)
-  }
-
-  export function getBookShelf(){
-    return getLocalStorage('shelf')
-  }
-
-  export function saveBookShelf(shelf){
-    return setLocalStorage('shelf', shelf)
-  }

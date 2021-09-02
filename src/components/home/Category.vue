@@ -1,12 +1,12 @@
 <template>
   <div class="category">
-    <title-view :label="$t('home.category')" :btn="$t('home.seeAll')" @onClick="showBookList"></title-view>
+    <title-view label="分类"></title-view>
     <div class="category-list">
-      <div class="category-item-wrapper" v-for="(item, index) in data" :key="index" @click="showBookCategory(item)">
+      <div class="category-item-wrapper" v-for="(item, index) in category" 
+           :key="index" @click="showBookCategory(item, index)">
         <div class="category-item">
           <div class="content-wrapper">
-            <div class="title title-medium">{{categoryText(item.category)}}</div>
-            <div class="num sub-title-tiny">{{item.num + ' ' + $t('home.books')}}</div>
+            <div class="title title-medium">{{index}}</div>
           </div>
           <div class="img-wrapper">
             <div class="img-group">
@@ -20,34 +20,30 @@
   </div>
 </template>
 
-<script type="text/ecmascript-6">
+<script>
   import TitleView from './Title'
-  import { categoryText, getCategoryName } from '../../utils/store'
+  import { categoryList } from '../../utils/store'
 
   export default {
+    data(){
+      return {
+        category: categoryList
+      }
+    },
     components: {
       TitleView
     },
-    props: {
-      data: Array
-    },
     methods: {
-      showBookCategory(item) {
+      showBookCategory(item, index) {
         this.$router.push({
           path: '/store/list',
           query: {
-            category: getCategoryName(item.category),
-            categoryText: this.categoryText(item.category)
+            category: item,
+            categoryText: index
           }
         })
-      },
-      categoryText(category) {
-        return categoryText(category, this)
-      },
-      showBookList() {
-        this.$router.push('/book-store/list')
       }
-    }
+    },
   }
 </script>
 

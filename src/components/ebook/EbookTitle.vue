@@ -4,7 +4,7 @@
       <div class="left">
         <span class="icon-back" @click="back"></span>
       </div>
-      <div class="right">
+      <!-- <div class="right">
         <div class="icon-wrapper">
           <span class="icon-shelf"></span>
         </div>
@@ -14,7 +14,7 @@
         <div class="icon-wrapper">
           <span class="icon-more"></span>
         </div>
-      </div>
+      </div> -->
     </div>
   </transition>
 </template>

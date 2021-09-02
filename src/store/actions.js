@@ -1,4 +1,37 @@
 const actions = {
+  setTitleList({commit}, list){
+    return commit('SET_TITLE_LIST', list)
+  },
+  preCpt({commit}) {
+    return new Promise((resolve, reject) => {
+        resolve(true);
+        commit('PRE_CPT')
+    })
+  },
+  nextCpt({commit}, max) {
+      return new Promise((resolve, reject) => {
+          resolve(true);
+          commit('NEXT_CPT', max)
+      })
+  },
+  prevPage({commit}) {
+    return new Promise((resolve, reject) => {
+        resolve(true);
+        commit('PREV_PAGE')
+    })
+  },
+  nextPage({commit}, max) {
+      return new Promise((resolve, reject) => {
+          resolve(true);
+          commit('NEXT_PAGE', max)
+      })
+  },
+  setCurrentCpt: ({commit}, cpt) => {
+    return commit('SET_CURRENT_CPT', cpt)
+  },
+  setCurrentPage: ({commit}, page) => {
+    return commit('SET_CURRENT_PAGE', page)
+  },
   setFontFamilyVisible: ({ commit }, visible) => {
     return commit('SET_FONT_FAMILY_VISIBLE', visible)
   },
@@ -20,36 +53,7 @@ const actions = {
   setDefaultTheme: ({ commit }, theme) => {
     return commit('SET_DEFAULT_THEME', theme)
   },
-  setBookAvailable: ({ commit }, bookAvailable) => {
-    return commit('SET_BOOK_AVAILABLE', bookAvailable)
-  },
-  setProgress: ({ commit }, progress) => {
-    return commit('SET_PROGRESS', progress)
-  },
-  setSection: ({ commit }, section) => {
-    return commit('SET_SECTION', section)
-  },
-  setIsPaginating: ({ commit }, isPaginating) => {
-    return commit('SET_IS_PAGINATING', isPaginating)
-  },
-  setCurrentBook: ({ commit }, book) => {
-    return commit('SET_CURRENT_BOOK', book)
-  },
-  setNavigation: ({ commit }, navigation) => {
-    return commit('SET_NAVIGATION', navigation)
-  },
-  setCover: ({ commit }, cover) => {
-    return commit('SET_COVER', cover)
-  },
-  setMetadata: ({ commit }, metadata) => {
-    return commit('SET_METADATA', metadata)
-  },
-  setPaginate: ({ commit }, paginate) => {
-    return commit('SET_PAGINATE', paginate)
-  },
-  setPagelist: ({ commit }, pagelist) => {
-    return commit('SET_PAGELIST', pagelist)
-  },
+  
   setIsBookmark({ commit }, isBookmark) {
     return commit('SET_IS_BOOKMARK', isBookmark)
   },
@@ -79,6 +83,9 @@ const actions = {
   },
   setCurrentType({ commit }, type) {
     return commit('SET_CURRENT_TYPE', type)
+  },
+  setUserInfo({ commit }, info){
+    return commit('SET_USER_INFO', info)
   }
 }
 

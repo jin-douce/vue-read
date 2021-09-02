@@ -11,7 +11,7 @@
       </div>
   </div>
 </template>
-
+ 
 <script>
 import { getBookmark, saveBookmark } from '../../utils/localStorage'
 import { ebookMixin } from '../../utils/mixin'
@@ -21,6 +21,13 @@ const BLUE = '#346cbc'
 const WHITE = '#fff'
 export default {
     mixins: [ebookMixin],
+    data(){
+        return {
+            text: '',
+            color: WHITE,
+            isFixed: false
+        }
+    },
     components: {
         BookMark
     },
@@ -43,7 +50,7 @@ export default {
     },
     watch: {
         offsetY(v){
-            if(!this.bookAvailable || this.menuVisible || this.settingVisible >= 0){
+            if(this.menuVisible || this.settingVisible >= 0){
                 return
             }
             if(v >= this.height && v < this.threshold){
@@ -66,40 +73,27 @@ export default {
         }
       }
     },
-    data(){
-        return {
-            text: '',
-            color: WHITE,
-            isFixed: false
-        }
-    },
+    
     methods: {
       addBookmark () {
         this.bookmark = getBookmark(this.fileName)
         if (!this.bookmark) {
             this.bookmark = []
         }
-        const currentLocation = this.currentBook.rendition.currentLocation()
-        const cifbase = currentLocation.start.cfi.replace(/!.*/, '')
-        const cfistart = currentLocation.start.cfi.replace(/.*!/, '').replace(/\)$/, '')
-        const cfiend = currentLocation.end.cfi.replace(/.*!/, '').replace(/\)$/, '')
-        const cfirange = `${cifbase}!,${cfistart},${cfiend})`
-        this.currentBook.getRange(cfirange).then(range => {
-            // replace消除空格
-            const text = range.toString().replace(/\s\s/g, '')
-            this.bookmark.push({
-            cfi: currentLocation.start.cfi,
-            text: text
-            })
-            saveBookmark(this.fileName, this.bookmark)
+        const text = this.fileName+'-Cpt'+this.currentCpt+'-'+this.currentPage
+        this.bookmark.push({
+          Cpt: this.currentCpt,
+          Page: this.currentPage,
+          text: text
         })
+        saveBookmark(this.fileName, this.bookmark)
+        
       },
       removeBookmark(){
-        const currentLocation = this.currentBook.rendition.currentLocation()
-        const cfi = currentLocation.start.cfi
         this.bookmark = getBookmark(this.fileName)
         if (this.bookmark) {
-          saveBookmark(this.fileName, this.bookmark.filter(item => item.cfi !== cfi))
+          saveBookmark(this.fileName, this.bookmark.filter(
+            item => item.Cpt !== this.currentCpt && item.Page !== this.currentPage))
           this.setIsBookmark(false)
         }
       },
@@ -119,11 +113,11 @@ export default {
       },
       beforeHeight(){
         if(this.isBookmark){
-            this.text = this.$t('book.pulldownDeleteMark')
+            this.text = '下拉删除书签'
             this.color = BLUE
             this.isFixed = true
         }else{
-            this.text = this.$t('book.pulldownAddMark')
+            this.text = '下拉添加书签'
             this.color = WHITE
             this.isFixed = false
         }       
@@ -141,11 +135,11 @@ export default {
           // 状态3：超过临界状态
           this.$refs.bookmark.style.top = `${-v}px`
           if(this.isBookmark){
-            this.text = this.$t('book.releaseDeleteMark')
+            this.text = '松手删除书签'
             this.color = WHITE
             this.isFixed = false
           }else{
-            this.text = this.$t('book.releaseAddMark')
+            this.text = '松手添加书签'
             this.color = BLUE
             this.isFixed = true
           }

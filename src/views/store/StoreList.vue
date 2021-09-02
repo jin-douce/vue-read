@@ -1,37 +1,41 @@
 <template>
+<!-- 书籍列表 -->
   <div class="book-list-wrapper">
-    <detail-title :title="title"
-                  :showShelf="true"
-                  @back="back"
-                  ref="title"></detail-title>
-    <scroll class="book-list-scroll-wrapper"
-            :top="42"
-            @onScroll="onScroll"
-            ref="scroll">
-      <featured :data="value" :titleText="titleText ? titleText : getCategoryText(key)" :btnText="''" v-for="(value, key, index) in list"
-                :key="index"></featured>
+    <detail-title :title="title" :showShelf="true" @back="back" ref="title"></detail-title>
+    <scroll class="book-list-scroll-wrapper" :top="42" @onScroll="onScroll"  ref="scroll">
+      
+      <div v-for="(item, index) in list" :key="index">
+        <router-link :to="{path:'/store/detail',query:{bookId:item.id}}">
+            <book-info
+            :cover="item.images"
+            :title="item.name"
+            :author="item.author"
+            :desc="item.type"
+          ></book-info>
+        </router-link>
+      </div>
     </scroll>
   </div>
 </template>
 
 <script>
-  import DetailTitle from '../../components/detail/DetaiTitle'
+  import BookInfo from '../../components/detail/BookInfo.vue'
+  import DetailTitle from '../../components/detail/DetailTitle'
   import Scroll from '../../components/common/Scroll'
-  import Featured from '../../components/home/Featured'
+  import {getBookType, search} from '../../api/store'
   import { realPx } from '../../utils/utils'
-  import { list } from '../../api/store'
   import { categoryList, categoryText } from '../../utils/store'
 
   export default {
     components: {
       DetailTitle,
       Scroll,
-      Featured
+      BookInfo
     },
     computed: {
       title() {
         if (this.list) {
-          return this.total && this.$t('home.allBook').replace('$1', this.totalNumber)
+          return this.total && '共 $1 本图书'.replace('$1', this.totalNumber)
         } else {
           return null
         }
@@ -65,28 +69,21 @@
         }
       },
       getList() {
-        list().then(response => {
-          this.list = response.data.data
-          this.total = response.data.total
-          const category = this.$route.query.category
+          const category = this.$route.query.categoryText
           const keyword = this.$route.query.keyword
           if (category) {
-            const key = Object.keys(this.list).filter(item => item === category)[0]
-            const data = this.list[key]
-            this.list = {}
-            this.list[key] = data
-          } else if (keyword) {
-            Object.keys(this.list).filter(key => {
-              this.list[key] = this.list[key].filter(book => book.fileName.indexOf(keyword) >= 0)
-              return this.list[key].length > 0
+            getBookType(category).then(res => {
+              this.list = res
             })
-          }
-        })
+          } else if (keyword) {
+            search(keyword).then(res => {
+              this.list = res;
+            })
+          }  
       }
     },
     created() {
-      this.getList()
-      this.titleText = this.$route.query.categoryText
+      this.getList() 
     }
   }
 </script>

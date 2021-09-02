@@ -24,7 +24,7 @@ export default {
     },
     watch:{
       offsetY(v){
-        if(!this.menuVisible && this.bookAvailable){
+        if(!this.menuVisible){
            if(v > 0){
             this.move(v)
           }else if(v === 0){
@@ -73,6 +73,7 @@ export default {
 <style lang="scss" rel="stylesheet/scss" scoped>
   @import '../../assets/styles/global';
   .ebook {
+    // 绝对定位，下拉时通过改变top实现
     position: absolute;
     top: 0;
     left: 0;

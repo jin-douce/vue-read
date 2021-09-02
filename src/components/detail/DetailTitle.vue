@@ -1,11 +1,12 @@
 <template>
+<!-- 头部标题栏 -->
   <div class="detail-title-wrapper" :class="{'hide-shadow': ifHideShadow}">
     <div class="title-left-wrapper" @click="back">
       <span class="icon-back"></span>
     </div>
     <div class="title-right-wrapper">
       <span class="icon-shelf icon" v-if="showShelf" @click="showBookShelf"></span>
-      <span class="icon-share" v-else></span>
+      <!-- <span class="icon-share" v-else></span> -->
     </div>
     <div class="title-text" v-if="title">
       {{title}}
@@ -47,6 +48,7 @@
 <style lang="scss" rel="stylesheet/scss" scoped>
   @import "../../assets/styles/global";
   .detail-title-wrapper {
+    background-color: rgb(75, 159, 238); 
     position: relative;
     display: flex;
     width: 100%;
@@ -63,6 +65,10 @@
       flex: 1;
       margin-left: px2rem(15);
       @include left;
+
+      .icon-back {
+        color: #fff;
+      }
     }
     .title-right-wrapper {
       position: relative;
@@ -70,6 +76,9 @@
       flex: 1;
       margin-right: px2rem(15);
       @include right;
+      .icon-shelf{
+        color: rgb(226, 225, 225);
+      }
     }
     .title-text {
       position: absolute;
@@ -79,7 +88,8 @@
       width: 100%;
       height: px2rem(42);
       font-size: px2rem(16);
-      color: #333;
+      font-weight: bold;
+      color: #fff;
       @include center;
     }
   }

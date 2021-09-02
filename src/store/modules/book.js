@@ -1,26 +1,51 @@
 const book = {
     state: {
+      titleList:[],
+      currentPage: 0,
+      currentCpt: 1,
       fileName: '',
       menuVisible: false,
       settingVisible: -1,  //-1：不显示  0：字体  1：主题  2：进度  3：目录
       defaultFontSize: 16,
       defaultFontFamily: 'Default',
       fontFamilyVisible: false,
-      defaultTheme: 'Default',
-      bookAvailable: false,
-      progress: 0,
-      section: 0,
-      isPaginating: true,
-      currentBook: null,
-      navigation: null,
-      cover: null,
-      metadata: null,
-      paginate: '',
-      pagelist: null,
+      defaultTheme: {
+        name: 'default',
+        bgc: '#fff'
+      },
       offsetY: 0,
-      isBookmark: null,
+      isBookmark: null,      
     },
     mutations: {
+      'SET_TITLE_LIST': (state, list) => {
+        state.titleList = list
+      },
+      'SET_CURRENT_CPT': (state, currentCpt) => {
+        state.currentCpt = currentCpt
+      },
+      'SET_CURRENT_PAGE': (state, currentPage) => {
+        state.currentPage = currentPage
+      },
+      'PRE_CPT': (state) => {
+        if (state.currentCpt <= 1) {
+          return false;
+        } else {
+            state.currentCpt--;
+        }
+      },
+      'NEXT_CPT': (state, max) => {
+        if (state.currentCpt > max) {
+          return false;
+        } else {
+            state.currentCpt++;
+        }
+      },
+      'PREV_PAGE': (state) => {
+            state.currentPage--;
+      },
+      'NEXT_PAGE': (state) => {
+            state.currentPage++;
+      },
       'SET_FILENAME': (state, fileName) => {
         state.fileName = fileName
       },
@@ -42,36 +67,11 @@ const book = {
       'SET_DEFAULT_THEME': (state, theme) => {
         state.defaultTheme = theme
       },
-      'SET_BOOK_AVAILABLE': (state, bookAvailable) => {
-        state.bookAvailable = bookAvailable
-      },
+ 
       'SET_PROGRESS': (state, progress) => {
         state.progress = progress
       },
-      'SET_SECTION': (state, section) => {
-        state.section = section
-      },
-      'SET_IS_PAGINATING': (state, isPaginating) => {
-        state.isPaginating = isPaginating
-      },
-      'SET_CURRENT_BOOK': (state, currentBook) => {
-        state.currentBook = currentBook
-      },
-      'SET_NAVIGATION': (state, navigation) => {
-        state.navigation = navigation
-      },
-      'SET_COVER': (state, cover) => {
-        state.cover = cover
-      },
-      'SET_METADATA': (state, metadata) => {
-        state.metadata = metadata
-      },
-      'SET_PAGINATE': (state, paginate) => {
-        state.paginate = paginate
-      },
-      'SET_PAGELIST': (state, pagelist) => {
-        state.pagelist = pagelist
-      },
+    
       'SET_OFFSETY': (state, offsetY) => {
         state.offsetY = offsetY
       },

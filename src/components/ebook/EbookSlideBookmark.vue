@@ -1,8 +1,8 @@
 <template>
   <div class="ebook-slide-bookmark">
-    <div class="slide-bookmark-title">{{$t('book.bookmark')}} · {{bookmark ? bookmark.length : 0}}</div>
+    <div class="slide-bookmark-title">书签 · {{bookmark ? bookmark.length : 0}}</div>
     <scroll class="slide-bookmark-list" :top="48" :bottom="48">
-      <div class="slide-bookmark-item" v-for="(item, index) in bookmark" :key="index" @click="displayBookmark(item.cfi)">
+      <div class="slide-bookmark-item" v-for="(item, index) in bookmark" :key="index" @click="displayBookmark(item)">
         <div class="slide-bookmark-item-icon">
           <div class="icon-bookmark"></div>
         </div>
@@ -29,9 +29,10 @@
     },
     methods: {
       displayBookmark(target) {
-        this.display(target, () => {
-          this.hideTitleAndMenu()
-        })
+        this.setCurrentCpt(target.Cpt)
+        this.setCurrentPage(target.Page)
+        this.setSettingVisible(-1)
+        this.setMenuVisible(false)
       }
     },
     mounted() {

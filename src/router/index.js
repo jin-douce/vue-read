@@ -15,7 +15,7 @@ export default new VueRouter({
       component: () => import('../views/ebook/index.vue'),
       children: [
         {
-          path: ':fileName',
+          path: ':bookId',
           component: () => import('../components/ebook/EbookReader.vue')
         }
       ]
@@ -23,8 +23,12 @@ export default new VueRouter({
     {
       path: '/store',
       component: () => import('../views/store/index.vue'),
-      redirect: '/store/shelf',
+      redirect: '/store/home',
       children: [
+        {
+          path: 'personal',
+          component: () => import('../views/store/Personal.vue')
+        },
         {
           path: 'shelf',
           component: () => import('../views/store/StoreShelf.vue')
@@ -34,8 +38,7 @@ export default new VueRouter({
           component: () => import('../views/store/StoreCategory.vue')
         },
         {
-          // 使用相对路径，会拼接在父级路径后面
-          
+          // 不加/表示使用相对路径，会拼接在父级路径后面
           path: 'home',
           component: () => import('../views/store/StoreHome.vue'),
         },
@@ -49,6 +52,11 @@ export default new VueRouter({
         }
       ]
     },
+    {
+      path: '/login',
+      component: () => import('../views/user/Login.vue')
+    },
+    
   ]
 })
 

@@ -1,6 +1,12 @@
 <template>
   <div class="ebook-reader">
-    <div id="read"></div>
+    <div id="read" :style="{backgroundColor: defaultTheme.bgc, color:defaultTheme.color}">
+      <p id="p" v-for="(item, index) in contents[currentPage]" :key="index" 
+          :style="{fontSize: `${defaultFontSize}px`}">
+        {{item}}
+      </p>
+    </div>
+<!-- 在蒙板上绑定事件，用于书签下拉的实现 -->
     <div
       class="ebook-reader-mask"
       @click="onMaskClick"
@@ -21,18 +27,54 @@ import {
   saveFontSize,
   getTheme,
   saveTheme,
-  getLocation,
+  getBookmark
 } from "../../utils/localStorage";
 import { ebookMixin } from "../../utils/mixin";
-import Epub from "epubjs";
-import { flatten } from "../../utils/book";
-import { getLocalForage } from "../../utils/localForage";
-
-global.ePub = Epub;
+import { getBookContent } from '../../api/store'
 
 export default {
   mixins: [ebookMixin],
+  data() {
+      return {
+          bookId: '',
+          title: '',
+          contents: [],
+          maxpage: 0,
+          counts: 0,
+      }
+  },
+  watch: {   
+    // 切换章节时重新请求
+      currentCpt(value) {
+        this.getContent()
+        this.refresh()
+      },
+      currentPage(val){
+        this.refresh()
+      },
+      defaultFontSize(font){
+        this.getContent()
+      }
+  },
   methods: {
+    move(e) {
+      // console.log(e);
+      let offsetY = 0;
+      if (this.firstOffsetY) {
+        offsetY = e.changedTouches[0].clientY - this.firstOffsetY;
+        this.setOffsetY(offsetY);
+      } else {
+        this.firstOffsetY = e.changedTouches[0].clientY;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    moveEnd(e) {
+      // console.log(e);
+      // this.$store.dispatch('setOffsetY', 0)
+      this.firstOffsetY = 0;
+      this.setOffsetY(0);
+    },
     onMouseEnter(e) {
       // 鼠标进入
       this.mouseState = 1;
@@ -79,45 +121,33 @@ export default {
       const offsetX = e.offsetX;
       const width = window.innerWidth;
       if (offsetX > 0 && offsetX < width * 0.3) {
-        this.prevPage();
+        // 点击屏幕左侧
+        if(this.currentPage>0){
+          this.prevPage()
+        }else if(this.currentCpt>1){
+          this.preCpt()
+          this.setCurrentPage(0)
+        }else return false
+
+        this.hideTitleAndMenu();
+      
       } else if (offsetX > 0 && offsetX > width * 0.7) {
-        this.nextPage();
+        // 点击右侧屏幕
+        if(this.currentPage < this.maxpage){
+          this.nextPage()
+        }else if(this.currentCpt<20){
+          this.nextCpt()
+          this.setCurrentPage(0)
+
+        }else return false
+        
+        this.hideTitleAndMenu();
+
       } else {
         this.toggleTitleAndMenu();
       }
     },
-    move(e) {
-      let offsetY = 0;
-      if (this.firstOffsetY) {
-        offsetY = e.changedTouches[0].clientY - this.firstOffsetY;
-        this.setOffsetY(offsetY);
-      } else {
-        this.firstOffsetY = e.changedTouches[0].clientY;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-    },
-    moveEnd(e) {
-      // this.$store.dispatch('setOffsetY', 0)
-      this.firstOffsetY = 0;
-      this.setOffsetY(0);
-    },
-    prevPage() {
-      if (this.rendition) {
-        this.rendition.prev().then(() => {
-          this.refreshLocation();
-        });
-        this.hideTitleAndMenu();
-      }
-    },
-    nextPage() {
-      if (this.rendition) {
-        this.rendition.next().then(() => {
-          this.refreshLocation();
-        });
-        this.hideTitleAndMenu();
-      }
-    },
+
     toggleTitleAndMenu() {
       if (this.menuVisible) {
         this.setSettingVisible(-1);
@@ -126,15 +156,6 @@ export default {
       this.setMenuVisible(!this.menuVisible);
     },
 
-    initFontSize() {
-      let fontSize = getFontSize(this.fileName);
-      if (!fontSize) {
-        saveFontSize(this.fileName, this.defaultFontSize);
-      } else {
-        // this.rendition.theme.fontSize(fontSize)
-        this.setDefaultFontSize(fontSize);
-      }
-    },
     initFontFamily() {
       let font = getFontFamily(this.fileName);
       if (!font) {
@@ -144,163 +165,74 @@ export default {
         this.setDefaultFontFamily(font);
       }
     },
-    initTheme() {
-      let defaultTheme = getTheme(this.fileName);
-      if (!defaultTheme) {
-        defaultTheme = this.themeList[0].name;
-        saveTheme(this.fileName, defaultTheme);
-      }
-      this.setDefaultTheme(defaultTheme);
-      this.themeList.forEach((theme) => {
-        this.rendition.themes.register(theme.name, theme.style);
-      });
-      this.rendition.themes.select(defaultTheme);
+ 
+    lengthOf(arr){
+      let len=0
+      arr.forEach(item => len += item.length)
+      return len
     },
-    // 初始化rendition对象
-    initRendition() {
-      this.rendition = this.book.renderTo("read", {
-        width: innerWidth,
-        height: innerHeight,
-        method: "default",
-      });
-      // location阅读进度
-      const location = getLocation(this.fileName);
-      this.display(location, () => {
-        this.initTheme();
-        this.initFontSize();
-        this.initFontFamily();
-        this.initGlobalStyle();
-      });
-      this.rendition.hooks.content.register((contents) => {
-        Promise.all([
-          contents.addStylesheet(
-            `${process.env.VUE_APP_RES_URL}/fonts/daysOne.css`
-          ),
-          contents.addStylesheet(
-            `${process.env.VUE_APP_RES_URL}/fonts/cabin.css`
-          ),
-          contents.addStylesheet(
-            `${process.env.VUE_APP_RES_URL}/fonts/montserrat.css`
-          ),
-          contents.addStylesheet(
-            `${process.env.VUE_APP_RES_URL}/fonts/tangerine.css`
-          ),
-        ]).then(() => {});
-      });
+    getContent(){
+      // 分页
+      this.contents = []
+      getBookContent(this.bookId, this.currentCpt).then(res => {
+                    this.title = res.title;
+                    const sections = res.content.split('-')
+                    let len
+                    if(this.defaultFontSize===14){
+                      len = 450 * (window.innerWidth /375 ) 
+                    }else if(this.defaultFontSize===16){
+                      len = 350 * (window.innerWidth /375 ) 
+                    }else if(this.defaultFontSize===18){
+                      len = 250 * (window.innerWidth /375 ) 
+                    }else if(this.defaultFontSize===20){
+                      len = 180 * (window.innerWidth /375 ) 
+                    }else{
+                      len = 150 * (window.innerWidth /375 ) 
+                    }
+                    while(sections.length){
+                      const page = []
+                      do{
+                        page.push(sections.shift())
+                      } while(sections.length && this.lengthOf(page) < len)
+                      this.contents.push(page)
+                    }   
+                    this.maxpage = this.contents.length
+
+                    let font = getFontSize(this.fileName)
+                    if(!font){
+                      saveFontSize(this.fileName, this.defaultFontSize)
+                    }else{
+                      this.setDefaultFontSize(font)
+                    }
+                    
+                    let theme = getTheme(this.fileName)
+                    if(!theme){
+                      saveTheme(this.fileName, this.defaultTheme)
+                    }else{
+                      this.setDefaultTheme(theme)
+                    }
+                })
     },
-    initGesture() {
-      this.rendition.on("touchstart", (event) => {
-        this.touchStartX = event.changedTouches[0].clientX;
-        this.timeStamp = event.timeStamp;
-      });
-      this.rendition.on("touchend", (event) => {
-        const offsetX = event.changedTouches[0].clientX - this.touchStartX;
-        const time = event.timeStamp - this.timeStamp;
-        if (time < 500 && offsetX > 40) {
-          this.prevPage();
-        } else if (time < 500 && offsetX < -40) {
-          this.nextPage();
+    refresh(){
+      // 判断是否是书签页
+      const bookmark = getBookmark(this.fileName)
+      if (bookmark) {
+        if (bookmark.some(item => item.Cpt === this.currentCpt && item.Page === this.currentPage)) {
+          this.setIsBookmark(true)
         } else {
-          this.toggleTitleAndMenu();
+          this.setIsBookmark(false)
         }
-        event.preventDefault();
-        event.stopPropagation();
-      });
-    },
-    // 解析电子书内容
-    parseBook() {
-      // 封面、标题、作者
-      this.book.loaded.cover.then((cover) => {
-        this.book.archive.createUrl(cover).then((url) => {
-          this.setCover(url);
-        });
-      });
-      this.book.loaded.metadata.then((metadata) => {
-        this.setMetadata(metadata);
-      });
-      // 获取目录，用flatten扁平化数组
-      this.book.loaded.navigation.then((nav) => {
-        const navItem = flatten(nav.toc);
-        // 判断当前目录的level
-        function find(item, level = 0) {
-          return !item.parent
-            ? level
-            : find(
-                navItem.filter(
-                  (parentItem) => parentItem.id === item.parent
-                )[0],
-                ++level
-              );
-        }
-        navItem.forEach((item) => {
-          item.level = find(item);
-        });
-        this.setNavigation(navItem);
-      });
-    },
-    initEpub(url) {
-      this.book = new Epub(url);
-      this.setCurrentBook(this.book);
-      this.initRendition();
-      // 添加蒙板后手势无法使用
-      // this.initGesture()
-      this.parseBook();
-      this.book.ready
-        .then(() => {
-          // 分页算法，不精确，只能粗略估计百分比
-          return this.book.locations.generate(
-            750 * (window.innerWidth / 375) * (getFontSize(this.fileName) / 16)
-          );
-        })
-        .then((locations) => {
-          this.navigation.forEach((nav) => {
-            nav.pagelist = [];
-          });
-          locations.forEach((item) => {
-            const loc = item.match(/\[(.*)\]!/)[1];
-            this.navigation.forEach((nav) => {
-              if (nav.href) {
-                const href = nav.href.match(/^(.*)\.html$/)[1];
-                if (href === loc) {
-                  nav.pagelist.push(item);
-                }
-              }
-            });
-            let currentPage = 1;
-            this.navigation.forEach((nav, index) => {
-              if (index === 0) {
-                nav.page = 1;
-              } else {
-                nav.page = currentPage;
-              }
-              currentPage += nav.pagelist.length + 1;
-            });
-          });
-          this.setPagelist(locations);
-          this.setBookAvailable(true);
-          this.refreshLocation();
-        });
-    },
-  },
-  mounted() {
-    const books = this.$route.params.fileName.split("|");
-    const fileName = books[1];
-    getLocalForage(fileName, (err, blob) => {
-      if (!err && blob) {
-        console.log("找到离线电子书");
-        this.setFileName(books.join("/")).then(() => {
-          this.initEpub(blob);
-        });
       } else {
-        console.log("在线获取电子书");
-        this.setFileName(books.join("/")).then(() => {
-          const url =
-            process.env.VUE_APP_RES_URL + "/epub/" + this.fileName + ".epub";
-          this.initEpub(url);
-        });
+        this.setIsBookmark(false)
       }
-    });
+    },
+    
   },
+  created() {
+    this.bookId = this.$route.params.bookId;
+    this.getContent()
+    
+  }
 };
 </script>
 
@@ -310,6 +242,16 @@ export default {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  
+  #read {
+    height: 100%;
+    padding: 10px;
+
+    #p {
+      line-height: 150%;
+    }
+  }
+
   .ebook-reader-mask {
     position: absolute;
     z-index: 150;

@@ -1,63 +1,46 @@
 <template>
   <div>
-    <div
-      class="search-bar"
-      :class="{ 'hide-title': !titleVisible, 'hide-shadow': !shadowVisible }"
-    >
+    <div class="search-bar" :class="{ 'hide-title': !titleVisible, 'hide-shadow': !shadowVisible }">
       <transition name="title-move">
         <div class="search-bar-title-wrapper" v-show="titleVisible">
           <div class="title-text-wrapper">
-            <span class="title-text title">{{ $t("home.title") }}</span>
+            <span class="title-text title">书城</span>
           </div>
           <div class="title-icon-shake-wrapper" @click="showFlapCard">
             <span class="icon-shake icon"></span>
           </div>
+          <div class="title-icon-person-wrapper" @click="person">
+            <span class="icon-person icon"></span>
+          </div>
         </div>
       </transition>
-      <div
-        class="title-icon-back-wrapper"
-        :class="{ 'hide-title': !titleVisible }"
-        @click="back"
-      >
-        <span class="icon-back icon"></span>
+
+      <div class="title-icon-back-wrapper" :class="{ 'hide-title': !titleVisible }" @click="back">
+        <span class="icon-shelf icon"></span>
       </div>
 
-      <div
-        class="search-bar-input-wrapper"
-        :class="{ 'hide-title': !titleVisible }"
-      >
-        <div
-          class="search-bar-blank"
-          :class="{ 'hide-title': !titleVisible }"
-        ></div>
+      <div class="search-bar-input-wrapper" :class="{ 'hide-title': !titleVisible }">
+        <div class="search-bar-blank" :class="{ 'hide-title': !titleVisible }"></div>
         <div class="search-bar-input">
           <span class="icon-search icon"></span>
           <input
-            class="input"
-            type="text"
-            :placeholder="$t('home.hint')"
-            v-model="searchText"
+            class="input" type="text" v-model="searchText"
             @click="showHotSearch"
             @keyup.13.exact="search"
           />
         </div>
       </div>
     </div>
-    <hot-search-list
-      v-show="hotSearchVisible"
-      ref="hotSearch"
-    ></hot-search-list>
+   
   </div>
 </template>
 
 <script>
 import { storeHomeMixin } from "../../utils/mixin";
-import HotSearchList from "./HotSearchList";
+
 export default {
   mixins: [storeHomeMixin],
-  components: {
-    HotSearchList,
-  },
+ 
   data() {
     return {
       searchText: "",
@@ -96,6 +79,14 @@ export default {
     },
     showFlapCard() {
       this.setFlapCardVisible(true);
+    },
+    person(){
+      if(localStorage.getItem('userInfo')) {
+          this.$router.push('/store/personal');
+      }
+      else {
+          this.$router.push('/login');
+      }
     },
     back() {
       if (this.offsetY > 0) {
@@ -136,9 +127,9 @@ export default {
       this.hideShadow();
       this.hotSearchVisible = true;
       // hotSearch显示后再进行reset操作
-      this.$nextTick(() => {
-        this.$refs.hotSearch.reset();
-      });
+      // this.$nextTick(() => {
+      //   this.$refs.hotSearch.reset();
+      // });
     },
   },
 };
@@ -149,6 +140,7 @@ export default {
 @import "../../assets/styles/global";
 
 .search-bar {
+  
   position: relative;
   z-index: 150;
   width: 100%;
@@ -161,25 +153,40 @@ export default {
     box-shadow: none;
   }
   .search-bar-title-wrapper {
+    background-color: rgb(208, 241, 154);
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: px2rem(42);
     .title-text-wrapper {
+      
       width: 100%;
       height: px2rem(42);
       @include center;
     }
     .title-icon-shake-wrapper {
       position: absolute;
-      right: px2rem(15);
+      right: px2rem(45);
       top: 0;
       height: px2rem(42);
       @include center;
     }
+    .title-icon-person-wrapper {
+      position: absolute;
+      right: px2rem(15);
+      top: 0;
+      height: px2rem(42);
+      @include center;
+
+      .icon-person {
+        font-size: 20px;
+        color: black;
+      }
+    }
   }
   .title-icon-back-wrapper {
+    
     position: absolute;
     left: px2rem(15);
     top: 0;
@@ -191,10 +198,15 @@ export default {
     &.hide-title {
       height: px2rem(52);
     }
+
+    .icon-back {
+      font-size: 20px;
+    }
   }
 
   // 向上移动通过改变最外层top来实现
   .search-bar-input-wrapper {
+    
     position: absolute;
     left: 0;
     top: px2rem(42);
@@ -220,14 +232,14 @@ export default {
     .search-bar-input {
       flex: 1;
       width: 100%;
-      background: #f4f4f4;
+      background: #f4f4f4e5;
       border-radius: px2rem(20);
       padding: px2rem(5) px2rem(15);
       box-sizing: border-box;
-      border: px2rem(1) solid #eee;
+      border: px2rem(1) solid rgb(223, 223, 223);
       @include left;
       .icon-search {
-        color: #999;
+        color: rgb(129, 129, 129);
       }
       .input {
         width: 100%;

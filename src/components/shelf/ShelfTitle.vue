@@ -1,25 +1,15 @@
 <template>
   <transition name="fade">
-    <div
-      class="shelf-title"
-      :class="{ 'hide-shadow': ifHideShadow }"
-      v-show="shelfTitleVisible"
-    >
+    <div class="shelf-title" :class="{ 'hide-shadow': ifHideShadow }" v-show="shelfTitleVisible">
       <div class="shelf-title-text-wrapper">
-        <span class="shelf-text">{{ title }}</span>
-        <span class="shelf-title-sub-text" v-show="isEditMode">{{
-          selectedText
-        }}</span>
+        <span class="shelf-title-text">{{ title }}</span>
+        <span class="shelf-title-sub-text" v-show="isEditMode">{{selectedText}}</span>
       </div>
       <div class="shelf-title-btn-wrapper shelf-title-left" v-if="showClear">
-        <span class="shelf-title-btn-text" @click="clearCache">{{
-          $t("shelf.clearCache")
-        }}</span>
+        <span class="shelf-title-btn-text" @click="gotoStore">去找书</span>
       </div>
       <div class="shelf-title-btn-wrapper shelf-title-right" v-if="showEdit">
-        <span class="shelf-title-btn-text" @click="onEditClick">{{
-          isEditMode ? $t("shelf.cancel") : $t("shelf.edit")
-        }}</span>
+        <span class="shelf-title-btn-text" @click="onEditClick">{{isEditMode ? '取消' : '编辑'}}</span>
       </div>
       <div class="shelf-title-btn-wrapper shelf-title-left" v-if="showBack">
         <span class="icon-back" @click="back"></span>
@@ -33,7 +23,7 @@
         @click="changeGroup"
         v-if="showChangeGroup"
       >
-        <span class="shelf-title-btn-text">{{ $t("shelf.editGroup") }}</span>
+        <span class="shelf-title-btn-text">修改分组</span>
       </div>
     </div>
   </transition>
@@ -77,13 +67,13 @@ export default {
     selectedText() {
       const selectedNumber = this.shelfSelected ? this.shelfSelected.length : 0;
       return selectedNumber <= 0
-        ? this.$t("shelf.selectBook")
+        ? '选择书籍'
         : selectedNumber === 1
-        ? this.$t("shelf.haveSelectedBook").replace("$1", selectedNumber)
-        : this.$t("shelf.haveSelectedBooks").replace("$1", selectedNumber);
+        ? '已选择$1本'.replace("$1", selectedNumber)
+        : '已选择$1本'.replace("$1", selectedNumber);
     },
     popupCancelBtn() {
-      return this.createPopupBtn(this.$t("shelf.cancel"), () => {
+      return this.createPopupBtn('取消', () => {
         this.hidePopup();
       });
     },
@@ -106,7 +96,7 @@ export default {
     onComplete() {
       this.hidePopup();
       this.setShelfList(
-        this.shelfList.filter((book) => book.id !== this.shelfCategory.id)
+        this.shelfList.filter((book) => book.ids !== this.shelfCategory.ids)
       ).then(() => {
         saveBookShelf(this.shelfList);
         this.$router.go(-1);
@@ -143,10 +133,10 @@ export default {
       this.hidePopup();
       setTimeout(() => {
         this.popupMenu = this.popup({
-          title: this.$t("shelf.deleteGroupTitle"),
+          title: '删除分组后，分组内的书籍将会自动移出分组',
           btn: [
             this.createPopupBtn(
-              this.$t("shelf.confirm"),
+              '确定',
               () => {
                 this.deleteGroup();
               },
@@ -160,11 +150,11 @@ export default {
     changeGroup() {
       this.popupMenu = this.popup({
         btn: [
-          this.createPopupBtn(this.$t("shelf.editGroupName"), () => {
+          this.createPopupBtn('修改分组名', () => {
             this.changeGroupName();
           }),
           this.createPopupBtn(
-            this.$t("shelf.deleteGroup"),
+            '解散分组',
             () => {
               this.showDeleteGroup();
             },
@@ -179,8 +169,9 @@ export default {
       this.setIsEditMode(false);
     },
     onEditClick() {
-      if (!this.isEditMode) {
-        this.setShelfSelected([]);
+      this.setShelfSelected([]);
+      if (!this.isEditMode) { 
+        // 点击前不是编辑模式，就将所有书籍设为非选中状态
         this.shelfList.forEach((item) => {
           item.selected = false;
           if (item.itemList) {
@@ -198,8 +189,11 @@ export default {
       this.setShelfList([]);
       this.setShelfSelected([]);
       this.getShelfList();
-      this.simpleToast(this.$t("shelf.clearCacheSuccess"));
+      this.simpleToast('缓存已清空');
     },
+    gotoStore(){
+      this.$router.push("/store/home");
+    }
   },
 };
 </script>
@@ -212,7 +206,7 @@ export default {
   z-index: 130;
   width: 100%;
   height: px2rem(42);
-  background: white;
+  background: rgb(208, 241, 154);
   box-shadow: 0 px2rem(2) px2rem(2) 0 rgba(0, 0, 0, 0.1);
   &.hide-shadow {
     box-shadow: none;

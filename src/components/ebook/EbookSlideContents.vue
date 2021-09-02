@@ -1,62 +1,11 @@
 <template>
   <div class="ebook-slide-contents">
-    <div class="slide-contents-search-wrapper">
-      <div class="slide-contents-search-input-wrapper">
-        <div class="slide-contents-search-icon">
-          <span class="icon-search"></span>
-        </div>
-        <input class="slide-contents-search-input"
-                type="text"
-                v-model="searchText"
-                :placeholder="$t('book.searchHint')"
-                @click="showSearchPage"
-                @keyup.enter.exact="search()">
-      </div>
-      <div class="slide-contents-search-cancel" 
-            v-if="searchVisible"
-            @click="hideSearchPage()">{{$t('book.cancel')}}
-      </div>
-    </div>
-    <div class="slide-contents-book-wrapper" v-show="!searchVisible">
-        <div class="slide-contents-book-img-wrapper">
-            <img :src="cover" class="slide-contents-book-img">
-        </div>
-        <div class="slide-contents-book-info-wrapper">
-          <div class="slide-contents-book-title">
-            <span class="slide-contents-book-title-text">{{metadata.title}}</span>
-          </div>
-          <div class="slide-contents-book-author">
-            <span class="slide-contents-book-author-text">{{metadata.creator}}</span>
-          </div>
-        </div>
-        <div class="slide-contents-book-progress-wrapper">
-            <div class="slide-contents-book-progress">
-                <span class="progress">{{progress+'%'}}</span>
-                <span class="progress-text">{{$t('book.haveRead2')}}</span>
-            </div>
-            <div class="slide-contents-book-time">{{getReadTimeText()}}</div>
-        </div>
-    </div>
-    <scroll class="slide-contents-list" 
-            :top="154" 
-            :bottom="48" 
-            v-show="!searchVisible">
-        <div class="slide-contents-item" v-for="(item, index) in navigation" :key="index">
-            <span class="slide-contents-item-label" :class="{'selected': section === index}" :style="contentItemStyle(item)"
-              @click="displayContent(item.href)">{{item.label}}</span>
-            <span class="slide-contents-item-page">{{item.page}}</span>
+    <scroll class="slide-contents-list" :top="154" :bottom="48" v-show="!searchVisible">
+        <div class="slide-contents-item" v-for="(item, index) in lists" :key="index">
+            <span class="slide-contents-item-label" :class="{'selected': currentCpt === index+1}"
+              @click="displayContent(index)">{{item}}</span>
+            <!-- <span class="slide-contents-item-page">{{item.page}}</span> -->
         </div>      
-    </scroll>
-    <scroll class="slide-search-list"
-            :top="66"
-            :bottom="48"
-            v-show="searchVisible">
-        <div class="slide-search-item" 
-          v-for="(item, index) in searchList" 
-          :key="index"
-          v-html="item.excerpt"
-          @click="displayContent(item.cfi, true)">     
-        </div>
     </scroll>
   </div>
 </template>
@@ -65,6 +14,7 @@
 import { ebookMixin } from '../../utils/mixin'
 import Scroll from '../common/Scroll'
 import { px2rem } from '../../utils/utils'
+import { getTitleList } from '../../api/store'
 export default {
   mixins: [ebookMixin],
   components: {
@@ -72,9 +22,10 @@ export default {
   },
   data(){
       return {
-          searchVisible: false,
-          searchList: null,
-          searchText: ''
+        lists:[],
+        searchVisible: false,
+        searchList: null,
+        searchText: ''
       }
   },
   methods: {
@@ -98,22 +49,12 @@ export default {
             .finally(item.unload.bind(item)))
         ).then(results => Promise.resolve([].concat.apply([], results)))
       },
-      // 跳转展示搜索结果
-      displayContent(target, highlight = false){
-        //  
-          this.display(target, () => {
-              this.hideTitleAndMenu()
-              if(highlight){
-                  this.currentBook.rendition.annotations.highlight(target)
-              }
-          })
+      
+      displayContent(index){
+        this.hideTitleAndMenu()
+        this.setCurrentCpt(index+1)
       },
-      // 不同level的目录偏移量不同
-      contentItemStyle(item){
-          return {
-              marginLeft: `${px2rem(item.level * 15)}rem`
-          }
-      },
+ 
       // 点击搜索框获取焦点，允许搜索
       showSearchPage(){
           this.searchVisible = true
@@ -123,6 +64,11 @@ export default {
           this.searchText = ''
           this.searchList = null
       }
+  },
+  created() {
+      getTitleList(this.fileName).then(res => {
+          this.lists = res.titles.split('-')
+      })
   }
 }
 </script>
@@ -235,6 +181,10 @@ export default {
           font-size: px2rem(14);
           line-height: px2rem(16);
           @include ellipsis;
+        }
+        .selected{
+          color: rgb(100, 186, 236);
+          font-weight: bold;
         }
         .slide-contents-item-page {
           flex: 0 0 px2rem(30);

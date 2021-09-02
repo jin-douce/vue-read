@@ -1,7 +1,8 @@
 <template>
+<!-- 热门、分类等标题 -->
   <div class="home-title-wrapper">
     <div class="label">{{label}}</div>
-    <div class="btn" @click="click">{{btn}}</div>
+    <!-- <div class="btn" @click="click">{{btn}}</div> -->
   </div>
 </template>
 
@@ -32,12 +33,12 @@
       color: #333;
       font-weight: bold;
     }
-    .btn {
-      font-size: px2rem(14);
-      color: rgba(64, 158, 255, 1);
-      &:active {
-        color: rgba(64, 158, 255, .5);
-      }
-    }
+    // .btn {
+    //   font-size: px2rem(14);
+    //   color: rgba(64, 158, 255, 1);
+    //   &:active {
+    //     color: rgba(64, 158, 255, .5);
+    //   }
+    // }
   }
 </style>

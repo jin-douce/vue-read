@@ -2,7 +2,7 @@ import { mapGetters, mapActions } from 'vuex'
 import { getBookmark, saveLocation, getBookShelf, saveBookShelf } from './localStorage'
 import { themeList, addCss, removeAllCss, getReadTimeByMinute } from './book'
 import { gotoBookDetail, appendAddToShelf,removeAddFromShelf, computeId } from './store'
-import { shelf } from "../api/store";
+import { getShelf } from "../api/store";
 
 export const storeShelfMixin = {
   computed: {
@@ -12,8 +12,9 @@ export const storeShelfMixin = {
       'shelfSelected',
       'shelfTitleVisible',
       'offsetY',
-      'shelfCategory',
-      'currentType'
+      'shelfCategory', //当前所在分组
+      'currentType', //当前位于书架还是分组内
+      'userInfo',
     ])
   },
   methods: {
@@ -24,45 +25,54 @@ export const storeShelfMixin = {
       'setShelfTitleVisible',
       'setOffsetY',
       'setShelfCategory',
-      'setCurrentType'
+      'setCurrentType',
+      'setUserInfo'
     ]),
     showBookDetail(book){
       gotoBookDetail(this, book)
     },
+
+    // 获取名称为title的分组
     getCategoryList(title){
       this.getShelfList().then(() => {
         const categoryList = this.shelfList.filter(
-          book => book.type === 2 && book.title === title)[0]
-          this.setShelfCategory(categoryList)
+          book => book.types === 2 && book.title === title)[0]
+          this.setShelfCategory(categoryList) //设置当前所在分组
       })
     },
+
+    // 获取书架的所有
     getShelfList() {
+      // 先尝试从localstorage获取
       let shelfList = getBookShelf();
-      // 如果不存在，则获取接口数据
-      if (!shelfList) {
-        shelf().then((response) => {
-          if (
-            response.status === 200 &&
-            response.data &&
-            response.data.bookList
-          ) {
-            shelfList = appendAddToShelf(response.data.bookList);
-            // 保存到LocalStorage
-            saveBookShelf(shelfList);
-            // 保存到vuex,返回promise对象
-            return this.setShelfList(shelfList);
-          }
-        });
-      } else {
-        // 如果已存在，不再重新获取，进行缓存
-        return this.setShelfList(shelfList);
+      if(!shelfList){
+        shelfList = appendAddToShelf([])
+        saveBookShelf(shelfList)
       }
+      return this.setShelfList(shelfList);
+      // 如果不存在，则获取接口数据
+      // if (!shelfList) {
+      //   console.log('从数据库请求');
+      //   getShelf(JSON.parse(localStorage.getItem('userInfo')).id).then(res => {
+      //     console.log('请求结果：',res);
+      //     // 在最后加一个空的
+      //     shelfList = appendAddToShelf(res);
+      //     // 保存到LocalStorage
+      //     saveBookShelf(shelfList);
+      //     // 保存到vuex,返回promise对象
+      //     return this.setShelfList(shelfList);
+      //   })
+        
+      // } else {
+      //   // 如果已存在，则不用从后端请求，缓存到vuex
+      //   return this.setShelfList(shelfList);
+      // }
     },
     moveOutOfGroup(f){
       this.setShelfList(
         this.shelfList.map((book) => {
-          if (book.type === 2 && book.itemList) {
-            // 保留为选中的图书
+          if (book.types === 2 && book.itemList) {
+            // 只保留未选中的图书
             book.itemList = book.itemList.filter(
               (subBook) => !subBook.selected
             );
@@ -76,7 +86,7 @@ export const storeShelfMixin = {
         );
         list = computeId(appendAddToShelf(list));
         this.setShelfList(list).then(() => {
-          this.simpleToast(this.$t("shelf.moveBookOutSuccess"));
+          this.simpleToast('成功移出');
           if(f) f()
         });
       });
@@ -107,35 +117,34 @@ export const storeHomeMixin = {
 export const ebookMixin = {
   computed: {
     ...mapGetters([
+      'titleList',
+      'currentPage',
+      'currentCpt',
+      'defaultFontSize',
       'fileName',
       'menuVisible',
       'settingVisible',
-      'defaultFontSize',
       'defaultFontFamily',
       'fontFamilyVisible',
       'defaultTheme',
-      'bookAvailable',
-      'progress',
-      'section',
-      'isPaginating',
-      'currentBook',
-      'navigation',
-      'cover',
-      'metadata',
-      'paginate',
-      'pagelist',
       'offsetY',
       'isBookmark',
     ]),
-    themeList() {
-      return themeList(this)
-    },
-    getSectionName() {
-      return this.section ? this.navigation[this.section].label : ''
-    }
+    // 写成计算属性不会频繁调用
+    // themeList() {
+    //   return themeList(this)
+    // },
+    
   },
   methods: {
     ...mapActions([
+      'setTitleList',
+      'setCurrentPage',
+      'setCurrentCpt',
+      'preCpt',
+      'nextCpt',
+      'prevPage',
+      'nextPage',
       'setFileName',
       'setMenuVisible',
       'setSettingVisible',
@@ -143,16 +152,6 @@ export const ebookMixin = {
       'setDefaultFontFamily',
       'setFontFamilyVisible',
       'setDefaultTheme',
-      'setBookAvailable',
-      'setProgress',
-      'setSection',
-      'setIsPaginating',
-      'setCurrentBook',
-      'setNavigation',
-      'setCover',
-      'setMetadata',
-      'setPaginate',
-      'setPagelist',
       'setOffsetY',
       'setIsBookmark',
     ]),
@@ -160,78 +159,32 @@ export const ebookMixin = {
       removeAllCss()
       switch (this.defaultTheme) {
         case 'Default':
-          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_default.css`)
+          
+          addCss('@/assets/theme/theme_default.css')
           break
         case 'Eye':
-          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_eye.css`)
+          addCss('@/assets/theme/theme_eye.css')
           break
         case 'Gold':
-          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_gold.css`)
+          addCss('@/assets/theme/theme_gold.css')
           break
         case 'Night':
-          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_night.css`)
+          addCss('@/assets/theme/theme_night.css') 
           break
         default:
-          addCss(`${process.env.VUE_APP_RES_URL}/theme/theme_default.css`)
+          addCss('@/assets/theme/theme_default.css')
           break
       }
     },
-    // 保存阅读进度
-    refreshLocation(){
-      const currentLocation = this.currentBook.rendition.currentLocation()
-      if(currentLocation && currentLocation.start){
-        const startCfi = currentLocation.start.cfi
-        const progress = this.currentBook.locations.percentageFromCfi(startCfi)
-        this.setProgress(Math.floor(progress * 100))
-        this.setSection(currentLocation.start.index)
-        saveLocation(this.fileName, startCfi)
-        // 判断是否是书签页
-        const bookmark = getBookmark(this.fileName)
-        if (bookmark) {
-          if (bookmark.some(item => item.cfi === startCfi)) {
-            this.setIsBookmark(true)
-          } else {
-            this.setIsBookmark(false)
-          }
-        } else {
-          this.setIsBookmark(false)
-        }
-        // 判断分页是否完成
-        if (this.pagelist) {
-          const totalPage = this.pagelist.length
-          const currentPage = currentLocation.start.location
-          if (currentPage && currentPage > 0) {
-            this.setPaginate(currentPage + ' / ' + totalPage)
-          } else {
-            this.setPaginate('')
-          }
-        } else {
-          this.setPaginate('')
-        }
-      }
-    },
-    // 加入异步方法满足不同需求
-    display(target, cb){
-      if(target){
-        this.currentBook.rendition.display(target).then(() => {
-          this.refreshLocation()
-          if(cb) cb()
-        })
-      }else{
-        this.currentBook.rendition.display().then(() => {
-          this.refreshLocation()
-          if(cb) cb()
-        })
-      }
-      
-    },
+   
+
     hideTitleAndMenu(){
       this.setMenuVisible(false)
       this.setSettingVisible(-1)
       this.setFontFamilyVisible(false)
     }, 
     getReadTimeText(){
-      return this.$t('book.haveRead').replace('$1', getReadTimeByMinute(this.fileName))
+      return '已读$1分钟'.replace('$1', getReadTimeByMinute(this.fileName))
     },
   }
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="category-book">
-    <title-view :label="categoryText(data.category)" :btn="$t('home.seeAll')" @onClick="showBookCategory"></title-view>
+    <title-view :label="categoryText(data.category)" btn="查看全部" @onClick="showBookCategory"></title-view>
     <div class="category-book-list">
       <div class="category-book-item" v-for="(item, index) in data.list" :key="index" @click="showBookDetail(item)">
         <div class="img-wrapper">

@@ -1,4 +1,5 @@
 <template>
+<!-- 书架分组(打开后) -->
   <div class="store-shelf">
     <shelf-title :title="shelfCategory.title"></shelf-title>
     <scroll
@@ -13,7 +14,7 @@
     <shelf-footer></shelf-footer>
   </div>
 </template>
-
+ 
 <script>
 import Scroll from "../../components/common/Scroll";
 import ShelfTitle from "../../components/shelf/ShelfTitle";
@@ -47,9 +48,9 @@ export default {
     onScroll(offsetY) {
       this.setOffsetY(offsetY);
     },
-  },
+  }, 
   mounted() {
-    this.getCategoryList(this.$route.query.title);
+    this.getCategoryList(this.$route.query.title); //获取title这个分组信息，并设置当前所在分组
     this.setCurrentType(2);
   },
 };
