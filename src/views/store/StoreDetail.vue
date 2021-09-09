@@ -1,5 +1,5 @@
 <template>
-  <div class="book-detail">
+  <div class="book-detail" v-if="book!==null">
     <detail-title @back="back" :showShelf="true" ref="title"></detail-title>
     <scroll
       class="content-wrapper"
@@ -67,6 +67,19 @@ export default {
     BookInfo,
     Toast,
   },
+   data() {
+    return {
+      lists:[],
+      book: null,
+      cover: null,
+      audio: null,
+      randomLocation: null,
+      description: null,
+      toastText: "",
+      trialText: null,
+      categoryText: null,
+    };
+  },
   computed: {  
     inBookShelf() {
       if (this.book && this.shelfList) {
@@ -85,19 +98,7 @@ export default {
       } else return false;
     },
   },
-  data() {
-    return {
-      lists:[],
-      book: null,
-      cover: null,
-      audio: null,
-      randomLocation: null,
-      description: null,
-      toastText: "",
-      trialText: null,
-      categoryText: null,
-    };
-  },
+ 
   methods: {
     addOrRemoveShelf() {
       if (this.inBookShelf) {
@@ -134,7 +135,7 @@ export default {
     },
   },
   created() {
-    const userid = JSON.parse(localStorage.getItem('userInfo')).id
+    // const userid = JSON.parse(localStorage.getItem('userInfo')).id
     const bookid = this.$route.query.bookId
     this.setFileName(bookid)
 
@@ -180,14 +181,7 @@ export default {
       }
 
     }
-    .audio-wrapper {
-      width: 100%;
-      padding: px2rem(15);
-      box-sizing: border-box;
-      #audio {
-        width: 100%;
-      }
-    }
+
   }
   .bottom-wrapper {
     position: fixed;

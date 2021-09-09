@@ -6,7 +6,7 @@
     <scroll :top="scrollTop" @onScroll="onScroll" ref="scroll">
 
       <div class="container">
-        <img :src="item" v-for='(item,i) in list' :key="i" v-show='i===activeIndex'>
+        <img :src="item" v-for='(item,i) in list' :key="i" v-show='i===activeIndex' @click="toLink(i)">
         <ul class="menu">
             <li @mouseenter='hover(i)' :class="{active:i===activeIndex}" 
             v-for='(item,i) in list' :key="i"></li>
@@ -59,6 +59,7 @@ export default {
       recommend: null,
       categoryList: null,
       categories: null,
+      link: [34, 174, 120, 110],
       list:[
         'https://tse3-mm.cn.bing.net/th/id/OIP-C.A2J2SvJoo7Z1M7tiddeDRQHaEK?w=301&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7',
         'https://tse1-mm.cn.bing.net/th/id/OIP-C._QYc9dd2xFGMvCIUjbislAHaEK?w=322&h=181&c=7&r=0&o=5&dpr=1.5&pid=1.7',
@@ -101,6 +102,12 @@ export default {
       }
       // 更新混动条
       this.$refs.scroll.refresh();
+    },
+    toLink(i){
+      this.$router.push({
+        path: '/store/detail',
+        query: { bookId: this.link[i] }
+      })
     },
     run() {
       this.timer = setInterval(() => {

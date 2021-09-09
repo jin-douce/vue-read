@@ -1,10 +1,11 @@
 <template>
   <div class="ebook-reader">
-    <div id="read" :style="{backgroundColor: defaultTheme.bgc, color:defaultTheme.color}">
-      <p id="p" v-for="(item, index) in contents[currentPage]" :key="index" 
-          :style="{fontSize: `${defaultFontSize}px`}">
-        {{item}}
-      </p>
+    <div id="read" :style="{backgroundColor: defaultTheme.bgc, 
+                              color:defaultTheme.color,
+                              fontSize:`${defaultFontSize}px`}"
+    >
+      <!-- <div id="page">
+      </div> -->
     </div>
 <!-- 在蒙板上绑定事件，用于书签下拉的实现 -->
     <div
@@ -21,8 +22,10 @@
 
 <script>
 import {
-  getFontFamily,
-  saveFontFamily,
+  getCpt,
+  saveCpt,
+  getPage,
+  savePage,
   getFontSize,
   saveFontSize,
   getTheme,
@@ -36,9 +39,11 @@ export default {
   mixins: [ebookMixin],
   data() {
       return {
+          children:null,
           bookId: '',
           title: '',
-          contents: [],
+          result: '',
+          words:'',
           maxpage: 0,
           counts: 0,
       }
@@ -48,12 +53,21 @@ export default {
       currentCpt(value) {
         this.getContent()
         this.refresh()
+        saveCpt(this.bookId, this.currentCpt)
       },
-      currentPage(val){
+      currentPage(val, oldVal){
+        if(this.result){
+          this.children[oldVal].style.display='none'
+          this.children[val].style.display='block'
+          savePage(this.bookId, this.currentPage)
+        }
         this.refresh()
       },
       defaultFontSize(font){
-        this.getContent()
+        // 字号改变要重新分页，还要重新渲染
+        if(this.result){
+          this.$nextTick(this.paginate)
+        }
       }
   },
   methods: {
@@ -133,7 +147,7 @@ export default {
       
       } else if (offsetX > 0 && offsetX > width * 0.7) {
         // 点击右侧屏幕
-        if(this.currentPage < this.maxpage){
+        if(this.currentPage < this.maxpage-1){
           this.nextPage()
         }else if(this.currentCpt<20){
           this.nextCpt()
@@ -147,7 +161,6 @@ export default {
         this.toggleTitleAndMenu();
       }
     },
-
     toggleTitleAndMenu() {
       if (this.menuVisible) {
         this.setSettingVisible(-1);
@@ -165,52 +178,90 @@ export default {
         this.setDefaultFontFamily(font);
       }
     },
- 
-    lengthOf(arr){
-      let len=0
-      arr.forEach(item => len += item.length)
-      return len
+
+    paginate(){
+
+      let box = document.getElementById('read')
+      let page = document.createElement("div")
+      let textNode = document.createTextNode('')                      
+      page.appendChild(textNode) 
+      box.appendChild(page)
+
+      // 重新分页时要先删掉前面所有子节点，只留page
+      // 要倒序删
+      for(let k=box.children.length-2;k>=0;k--){
+        box.removeChild(box.children[k])
+      }
+
+      let text = null
+      let i = 0
+      this.maxpage = 0
+      while(i < this.words.length){
+        let text1 = text ? text + '' + this.words[i] : this.words[i] 
+        page.firstChild.nodeValue = text1
+
+        if(page.offsetHeight > window.innerHeight-15){
+          page.firstChild.nodeValue = text
+          box.insertBefore(page.cloneNode(true), page)
+          text = null   
+          this.maxpage++                    
+        }else {               
+          text = text1
+          i++
+        }
+      }
+      page.firstChild.nodeValue = text
+      box.insertBefore(page.cloneNode(true), page)
+      this.maxpage++  
+
+      this.children = box.children
+      for(let k=0;k<this.children.length;k++){
+        if(k!==this.currentPage)
+          this.children[k].style.display='none'
+      }
+      if(this.currentPage>=this.maxpage){
+        this.children[this.maxpage-1].style.display='block'
+      }
     },
+
+    setFT(){
+      let font = getFontSize(this.bookId)
+      if(!font){
+        saveFontSize(this.bookId, this.defaultFontSize)
+      }else{
+        this.setDefaultFontSize(font)
+      }
+      
+      let theme = getTheme(this.bookId)
+      if(!theme){
+        saveTheme(this.bookId, this.defaultTheme)
+      }else{
+        this.setDefaultTheme(theme)
+      }
+
+      let cpt = getCpt(this.bookId)
+      if(!cpt){
+        saveCpt(this.bookId, this.currentCpt)
+      }else{
+        this.setCurrentCpt(cpt)
+      }
+
+      let page = getPage(this.bookId)
+      if(!page){
+        savePage(this.bookId, this.currentPage)
+      }else{
+        this.setCurrentPage(page)
+      }
+    },
+    // vuex的数据是存储在内存中，页面刷新时，内存将会被释放，所以取不到filename，所以为空
     getContent(){
-      // 分页
-      this.contents = []
       getBookContent(this.bookId, this.currentCpt).then(res => {
                     this.title = res.title;
-                    const sections = res.content.split('-')
-                    let len
-                    if(this.defaultFontSize===14){
-                      len = 450 * (window.innerWidth /375 ) 
-                    }else if(this.defaultFontSize===16){
-                      len = 350 * (window.innerWidth /375 ) 
-                    }else if(this.defaultFontSize===18){
-                      len = 250 * (window.innerWidth /375 ) 
-                    }else if(this.defaultFontSize===20){
-                      len = 180 * (window.innerWidth /375 ) 
-                    }else{
-                      len = 150 * (window.innerWidth /375 ) 
-                    }
-                    while(sections.length){
-                      const page = []
-                      do{
-                        page.push(sections.shift())
-                      } while(sections.length && this.lengthOf(page) < len)
-                      this.contents.push(page)
-                    }   
-                    this.maxpage = this.contents.length
+                    this.result=res
+                    this.words = res.content.replace(/-/g,'\n') 
 
-                    let font = getFontSize(this.fileName)
-                    if(!font){
-                      saveFontSize(this.fileName, this.defaultFontSize)
-                    }else{
-                      this.setDefaultFontSize(font)
-                    }
-                    
-                    let theme = getTheme(this.fileName)
-                    if(!theme){
-                      saveTheme(this.fileName, this.defaultTheme)
-                    }else{
-                      this.setDefaultTheme(theme)
-                    }
+                    // 分页
+                    this.paginate()
                 })
     },
     refresh(){
@@ -228,10 +279,11 @@ export default {
     },
     
   },
-  created() {
+  mounted() {
     this.bookId = this.$route.params.bookId;
-    this.getContent()
-    
+    this.setFileName(this.bookId)
+    this.setFT()
+    this.getContent()   
   }
 };
 </script>
@@ -245,11 +297,14 @@ export default {
   
   #read {
     height: 100%;
-    padding: 10px;
+    padding: 15px;
+    line-height:30px;
 
-    #p {
-      line-height: 150%;
+    #page {
+      // border: 1px solid black;
+      // padding: 10px;
     }
+
   }
 
   .ebook-reader-mask {
