@@ -33,7 +33,8 @@ export default {
       return px2rem(this.top) + "rem";
     },
     itemHeight() {
-      return ((window.innerWidth - realPx(120)) / 3 / 250) * 350 + "px";
+      // return ((window.innerWidth - realPx(120)) / 3 / 250) * 350 + "px";
+      return window.innerHeight / 3
     },
   },
 };
