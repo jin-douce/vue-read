@@ -1,13 +1,8 @@
 <template>
   <div class="book-detail" v-if="book!==null">
     <detail-title @back="back" :showShelf="true" ref="title"></detail-title>
-    <scroll
-      class="content-wrapper"
-      :top="42"
-      :bottom="52"
-      @onScroll="onScroll"
-      ref="scroll"
-    >
+
+    <scroll class="content-wrapper" :top="42" :bottom="52" @onScroll="onScroll" ref="scroll">
       <book-info
         :cover="book.images"
         :title="book.name"
@@ -27,20 +22,13 @@
             </div>
         </div>
       </div>
-
     </scroll>
-    <div class="bottom-wrapper">
-      <div class="bottom-btn" @click.stop.prevent="readBook()">
-        开始阅读
-      </div>
 
+    <div class="bottom-wrapper">
+      <div class="bottom-btn" @click.stop.prevent="readBook()">开始阅读</div>
       <div class="bottom-btn" @click.stop.prevent="addOrRemoveShelf()">
         <span class="icon-selected" v-if="inBookShelf"></span>
-        {{
-          inBookShelf
-            ? '已在书架'
-            : '加入书架'
-        }}
+        {{ inBookShelf ? '已在书架' : '加入书架'}}
       </div>
     </div>
     <toast :text="toastText" ref="toast"></toast>
@@ -54,7 +42,7 @@ import Scroll from "../../components/common/Scroll";
 import Toast from "../../components/common/Toast";
 import { getBook,getTitleList } from "../../api/store";
 import { px2rem, realPx } from "../../utils/utils";
-import { removeFromBookShelf, addToShelf } from "../../utils/store";
+import { computeId } from "../../utils/store";
 import { getBookShelf, saveBookShelf } from "../../utils/localStorage";
 import { ebookMixin, storeShelfMixin } from "../../utils/mixin";
 
@@ -71,44 +59,51 @@ export default {
     return {
       lists:[],
       book: null,
-      cover: null,
-      audio: null,
-      randomLocation: null,
-      description: null,
       toastText: "",
-      trialText: null,
-      categoryText: null,
     };
   },
   computed: {  
     inBookShelf() {
-      if (this.book && this.shelfList) {
-        // 扁平化
-        const flatShelf = (function flatten(arr) {
-          return [].concat(
-            ...arr.map((v) => (v.itemList ? [v, ...flatten(v.itemList)] : v))
-          );
-        })(this.shelfList)
-        .filter((item) => item.types === 1);
-        
-        const book = flatShelf.filter(
-          (item) => item.name === this.book.name
-        );
+      if (this.book && this.shelfList.length) {
+        const flatShelf = this.flatten(this.shelfList).filter(item => item.types === 1);
+        const book = flatShelf.filter(item => item.name === this.book.name);
         return book && book.length > 0;
       } else return false;
     },
   },
  
   methods: {
+    flatten(arr) {
+      let  a = arr.map(v => v.itemList ? [v, ...v.itemList] : v)
+      return [].concat(...a);
+    },
     addOrRemoveShelf() {
       if (this.inBookShelf) {
-        this.setShelfList(removeFromBookShelf(this.book)).then(() => {
-          saveBookShelf(this.shelfList);
-        });
+        this.removeFromShelf(this.book)
+        this.setShelfList(getBookShelf())
       } else {
-        addToShelf(this.book);
+        this.addToShelf(this.book);
         this.setShelfList(getBookShelf());//更新vuex
       }
+    },
+    // 加入书架
+    addToShelf(book){
+      book.types = 1
+      let shelfList = getBookShelf()
+      shelfList.push(book)
+      shelfList = computeId(shelfList)
+      saveBookShelf(shelfList) //保存到localStorage
+    },
+    
+    // 从书架移除
+    removeFromShelf(book){
+      let shelfList = getBookShelf().filter(item => {
+        if(item.itemList){
+          item.itemList = item.itemList.filter(item => item.name !== book.name)
+        }
+        return item.name !== book.name
+      })
+      saveBookShelf(shelfList)
     },
     showToast(text) {
       this.toastText = text;
@@ -148,7 +143,7 @@ export default {
           this.setTitleList(this.lists)
     })
 
-    if (!this.shelfList || this.shelfList.length === 0) {
+    if (!this.shelfList.length) {
       this.getShelfList();
     }
   },

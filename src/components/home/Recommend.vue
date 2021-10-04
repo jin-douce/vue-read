@@ -9,11 +9,10 @@
             <img class="img" :src="item.images">
           </div>
           <div class="content-wrapper">
-            <div class="title title-medium" ref="title">{{item.name}}</div>
-            <div class="num sub-title" ref="num">{{item.author}}</div>
+            <div class="title" ref="title">{{item.name}}</div>
+            <div class="num" ref="num">{{item.author}}</div>
           </div>
-        </router-link>
-        
+        </router-link>        
       </div>
     </div>
   </div>
@@ -65,6 +64,7 @@
           }
           .num {
             margin-top: px2rem(5);
+            font-size: px2rem(14);
           }
         }
       }

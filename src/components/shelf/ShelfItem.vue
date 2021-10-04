@@ -1,24 +1,15 @@
 <template>
   <div class="shelf-item" @click="onItemClick">
-    <component
-      class="shelf-item-comp"
-      :class="{ 'is-edit': isEditMode && data.types === 2 }"
-      :is="item"
-      :data="data"
-    ></component>
-    <div
-      class="icon-check"
-      :class="{ 'is-selected': data.selected }"
-      v-show="isEditMode && data.types === 1"
-    ></div>
+    <component class="comp" :is="item" :data="data"></component>
+    <div class="icon-check" :class="{ 'is-selected': selected }" 
+    v-show="isEditMode && data.types === 1"></div>
   </div>
-</template>
+</template> 
 
 <script>
 import { storeShelfMixin } from "../../utils/mixin";
-import ShelfBook from "./ShelfItemBook";
-import ShelfCategory from "./ShelfItemCategory";
-import ShelfAdd from "./ShelfItemAdd";
+import ShelfBook from "./ItemBook";
+import ShelfCategory from "./ItemCategory";
 
 export default {
   mixins: [storeShelfMixin],
@@ -29,25 +20,27 @@ export default {
     item() {
       return this.data.types === 1
         ? this.book
-        : this.data.types === 2
-        ? this.category
-        : this.add;
+        : this.category
+    },
+    selected() {
+      return this.shelfSelected.indexOf(this.data)>-1
     },
   },
   data() {
     return {
       book: ShelfBook,
       category: ShelfCategory,
-      add: ShelfAdd,
     };
   },
   methods: {
     onItemClick() {
       if (this.isEditMode) {
         // 编辑模式下
-        this.data.selected = !this.data.selected;
-        if (this.data.selected && this.data.types===1) {
-          this.shelfSelected.pushWithoutDuplicate(this.data);
+        if(this.data.types===1){
+          this.data.selected = !this.data.selected;
+        }  
+        if (this.data.selected && this.shelfSelected.indexOf(this.data)===-1) {
+          this.shelfSelected.push(this.data);
         } else {
           this.setShelfSelected(
             this.shelfSelected.filter((item) => item.ids !== this.data.ids)
@@ -65,7 +58,7 @@ export default {
             path: "/store/category",
             query: { title: this.data.title }, //到storeCategory进入分组内，传参为分组名
           });
-        } else  this.$router.push({path: '/store/home'})   
+        } 
       }
     },
   },
@@ -79,12 +72,6 @@ export default {
   position: relative;
   width: 100%;
   height: 100%;
-  .shelf-item-comp {
-    opacity: 1;
-    &.is-edit {
-      opacity: 0.5;
-    }
-  }
   .icon-check {
     position: absolute;
     bottom: px2rem(2);

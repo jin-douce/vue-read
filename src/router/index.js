@@ -19,7 +19,7 @@ export default new VueRouter({
           component: () => import('../components/ebook/EbookReader.vue')
         }
       ]
-    },
+    }, 
     {
       path: '/store',
       component: () => import('../views/store/index.vue'),
@@ -31,11 +31,11 @@ export default new VueRouter({
         },
         {
           path: 'shelf',
-          component: () => import('../views/store/StoreShelf.vue')
+          component: () => import('../views/store/Shelf.vue')
         },
         {
           path: 'category',
-          component: () => import('../views/store/StoreCategory.vue')
+          component: () => import('../views/store/ShelfGroup.vue')
         },
         {
           // 不加/表示使用相对路径，会拼接在父级路径后面

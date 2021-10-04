@@ -1,22 +1,10 @@
 <template>
   <transition name="slide-up">
-    <div class="setting-wrapper" v-show="menuVisible && settingVisible === 1">
-      <div class="setting-theme">
-        <div
-          class="setting-theme-item"
-          v-for="(item, index) in themeList"
-          :key="index"
-          @click="setTheme(item)"
-        >
-          <div
-            class="preview"
-            :class="{ selected: item.name === defaultTheme.name }"
-            :style="{ background: item.bgc}"
-          ></div>
-          <div class="text" :class="{ selected: item.name === defaultTheme }">
-            {{ item.name }}
-          </div>
-        </div>
+    <div class="setting-theme" v-show="menuVisible && settingVisible === 1">
+      <div class="setting-theme-item" v-for="(item, index) in themeList" :key="index" @click="setTheme(item)">
+        <div class="preview" :class="{ selected: item.name === defaultTheme.name }"
+          :style="{ background: item.bgc}"></div>
+        <div class="text" :class="{ selected: item.name === defaultTheme }">{{ item.name }}</div>
       </div>
     </div>
   </transition>
@@ -46,17 +34,15 @@ export default {
 <style lang="scss" rel="stylesheet/scss" scoped>
 @import "../../assets/styles/global";
 
-.setting-wrapper {
-  position: absolute;
-  bottom: px2rem(48);
-  left: 0;
-  z-index: 160;
-  width: 100%;
-  height: px2rem(90);
-  background: white;
-  box-shadow: 0 px2rem(-8) px2rem(8) rgba(0, 0, 0, 0.15);
-  .setting-theme {
-    height: 100%;
+.setting-theme {
+    position: absolute;
+    bottom: px2rem(48);
+    left: 0;
+    z-index: 160;
+    width: 100%;
+    height: px2rem(90);
+    background: white;
+    box-shadow: 0 px2rem(-8) px2rem(8) rgba(0, 0, 0, 0.15);
     display: flex;
     .setting-theme-item {
       flex: 1;
@@ -83,5 +69,4 @@ export default {
       }
     }
   }
-}
 </style>

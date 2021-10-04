@@ -74,14 +74,6 @@ export function setBookObject(fileName, key, value) {
   }
    
   
-  export function getFontFamily(fileName) {
-    return getBookObject(fileName, 'fontFamily')
-  }
-  
-  export function saveFontFamily(fileName, fontFamily) {
-    setBookObject(fileName, 'fontFamily', fontFamily)
-  }
-  
   export function getTheme(fileName) {
     return getBookObject(fileName, 'theme')
   }

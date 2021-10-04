@@ -3,6 +3,9 @@
     <div class="search-bar" :class="{ 'hide-title': !titleVisible, 'hide-shadow': !shadowVisible }">
       <transition name="title-move">
         <div class="search-bar-title-wrapper" v-show="titleVisible">
+          <div class="title-icon-back-wrapper" @click="back">
+            <span class="icon-shelf icon"></span>
+          </div>
           <div class="title-text-wrapper">
             <span class="title-text title">书城</span>
           </div>
@@ -15,17 +18,12 @@
         </div>
       </transition>
 
-      <div class="title-icon-back-wrapper" :class="{ 'hide-title': !titleVisible }" @click="back">
-        <span class="icon-shelf icon"></span>
-      </div>
-
       <div class="search-bar-input-wrapper" :class="{ 'hide-title': !titleVisible }">
-        <div class="search-bar-blank" :class="{ 'hide-title': !titleVisible }"></div>
         <div class="search-bar-input">
           <span class="icon-search icon"></span>
           <input
             class="input" type="text" v-model="searchText"
-            @click="showHotSearch"
+            @click="showSearch"
             @keyup.13.exact="search"
           />
         </div>
@@ -46,7 +44,6 @@ export default {
       searchText: "",
       titleVisible: true,
       shadowVisible: false,
-      hotSearchVisible: false,
     };
   },
   // 使用watch监听offsetY
@@ -57,13 +54,6 @@ export default {
         this.showShadow();
       } else {
         this.showTitle();
-        this.hideShadow();
-      }
-    },
-    hotSearchOffsetY(offsetY) {
-      if (offsetY > 0) {
-        this.showShadow();
-      } else {
         this.hideShadow();
       }
     },
@@ -94,11 +84,7 @@ export default {
       } else {
         this.hideShadow();
       }
-      if (this.hotSearchVisible) {
-        this.hideHotSearch();
-      } else {
-        this.$router.push("/store/shelf");
-      }
+      this.$router.push("/store/shelf");
     },
     hideTitle() {
       this.titleVisible = false;
@@ -112,24 +98,9 @@ export default {
     showShadow() {
       this.shadowVisible = true;
     },
-    hideHotSearch() {
-      this.hotSearchVisible = false;
-      if (this.offsetY > 0) {
-        this.hideTitle();
-        this.showShadow();
-      } else {
-        this.showTitle();
-        this.hideShadow();
-      }
-    },
-    showHotSearch() {
+    showSearch() {
       this.hideTitle();
       this.hideShadow();
-      this.hotSearchVisible = true;
-      // hotSearch显示后再进行reset操作
-      // this.$nextTick(() => {
-      //   this.$refs.hotSearch.reset();
-      // });
     },
   },
 };
@@ -159,6 +130,20 @@ export default {
     left: 0;
     width: 100%;
     height: px2rem(42);
+    .title-icon-back-wrapper {   
+      position: absolute;
+      left: px2rem(15);
+      top: 0;
+      // 不设置会被盖住，无法点击（绝对定位）
+      z-index: 200;
+      height: px2rem(42);
+      transition: height $animationTime $animationType;
+      @include center;
+
+      .icon-back {
+        font-size: 20px;
+      }
+    }
     .title-text-wrapper {
       
       width: 100%;
@@ -185,24 +170,7 @@ export default {
       }
     }
   }
-  .title-icon-back-wrapper {
-    
-    position: absolute;
-    left: px2rem(15);
-    top: 0;
-    // 不设置会被盖住，无法点击（绝对定位）
-    z-index: 200;
-    height: px2rem(42);
-    transition: height $animationTime $animationType;
-    @include center;
-    &.hide-title {
-      height: px2rem(52);
-    }
-
-    .icon-back {
-      font-size: 20px;
-    }
-  }
+  
 
   // 向上移动通过改变最外层top来实现
   .search-bar-input-wrapper {
@@ -210,7 +178,6 @@ export default {
     position: absolute;
     left: 0;
     top: px2rem(42);
-    display: flex;
     width: 100%;
     height: px2rem(52);
     padding: px2rem(10);
@@ -219,18 +186,8 @@ export default {
     &.hide-title {
       top: 0;
     }
-    // 占位符
-    .search-bar-blank {
-      flex: 0 0 0;
-      width: 0;
-      transition: all $animationTime $animationType;
-      &.hide-title {
-        flex: 0 0 px2rem(31);
-        width: px2rem(31);
-      }
-    }
+
     .search-bar-input {
-      flex: 1;
       width: 100%;
       background: #f4f4f4e5;
       border-radius: px2rem(20);
@@ -252,9 +209,7 @@ export default {
         &:focus {
           outline: none;
         }
-        &::-webkit-input-placeholder {
-          color: #ccc;
-        }
+        
       }
     }
   }

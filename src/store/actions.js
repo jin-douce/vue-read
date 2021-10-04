@@ -2,41 +2,11 @@ const actions = {
   setTitleList({commit}, list){
     return commit('SET_TITLE_LIST', list)
   },
-  preCpt({commit}) {
-    return new Promise((resolve, reject) => {
-        resolve(true);
-        commit('PRE_CPT')
-    })
-  },
-  nextCpt({commit}, max) {
-      return new Promise((resolve, reject) => {
-          resolve(true);
-          commit('NEXT_CPT', max)
-      })
-  },
-  prevPage({commit}) {
-    return new Promise((resolve, reject) => {
-        resolve(true);
-        commit('PREV_PAGE')
-    })
-  },
-  nextPage({commit}, max) {
-      return new Promise((resolve, reject) => {
-          resolve(true);
-          commit('NEXT_PAGE', max)
-      })
-  },
   setCurrentCpt: ({commit}, cpt) => {
     return commit('SET_CURRENT_CPT', cpt)
   },
   setCurrentPage: ({commit}, page) => {
     return commit('SET_CURRENT_PAGE', page)
-  },
-  setFontFamilyVisible: ({ commit }, visible) => {
-    return commit('SET_FONT_FAMILY_VISIBLE', visible)
-  },
-  setDefaultFontFamily: ({ commit }, font) => {
-    return commit('SET_DEFAULT_FONT_FAMILY', font)
   },
   setDefaultFontSize: ({ commit }, fontSize) => {
     return commit('SET_DEFAULT_FONT_SIZE', fontSize)
@@ -59,9 +29,6 @@ const actions = {
   },
   setOffsetY({ commit }, offsetY) {
     return commit('SET_OFFSETY', offsetY)
-  },
-  setHotSearchOffsetY({ commit }, offsetY) {
-    return commit('SET_HOT_SEARCH_OFFSETY', offsetY)
   },
   setFlapCardVisible({ commit }, flapCardVisible) {
     return commit('SET_FLAP_CARD_VISIBLE', flapCardVisible)

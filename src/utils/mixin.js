@@ -1,6 +1,6 @@
 import { mapGetters, mapActions } from 'vuex'
-import { getBookmark, saveLocation, getBookShelf, saveBookShelf } from './localStorage'
-import { themeList, addCss, removeAllCss, getReadTimeByMinute } from './book'
+import { getBookShelf, saveBookShelf } from './localStorage'
+import { getReadTimeByMinute } from './book'
 import { gotoBookDetail, appendAddToShelf,removeAddFromShelf, computeId } from './store'
 import { getShelf } from "../api/store";
 
@@ -28,16 +28,13 @@ export const storeShelfMixin = {
       'setCurrentType',
       'setUserInfo'
     ]),
-    showBookDetail(book){
-      gotoBookDetail(this, book)
-    },
 
     // 获取名称为title的分组
-    getCategoryList(title){
+    getCategory(title){
       this.getShelfList().then(() => {
         const categoryList = this.shelfList.filter(
-          book => book.types === 2 && book.title === title)[0]
-          this.setShelfCategory(categoryList) //设置当前所在分组
+          book => book.types === 2 && book.title === title)[0]  
+          this.setShelfCategory(categoryList) 
       })
     },
 
@@ -46,8 +43,8 @@ export const storeShelfMixin = {
       // 先尝试从localstorage获取
       let shelfList = getBookShelf();
       if(!shelfList){
-        shelfList = appendAddToShelf([])
-        saveBookShelf(shelfList)
+        shelfList = []
+        saveBookShelf([])
       }
       return this.setShelfList(shelfList);
       // 如果不存在，则获取接口数据
@@ -68,29 +65,7 @@ export const storeShelfMixin = {
       //   return this.setShelfList(shelfList);
       // }
     },
-    moveOutOfGroup(f){
-      this.setShelfList(
-        this.shelfList.map((book) => {
-          if (book.types === 2 && book.itemList) {
-            // 只保留未选中的图书
-            book.itemList = book.itemList.filter(
-              (subBook) => !subBook.selected
-            );
-          }
-          return book;
-        })
-      ).then(() => {
-        let list = [].concat(
-          removeAddFromShelf(this.shelfList),
-          ...this.shelfSelected
-        );
-        list = computeId(appendAddToShelf(list));
-        this.setShelfList(list).then(() => {
-          this.simpleToast('成功移出');
-          if(f) f()
-        });
-      });
-    }
+    
   }
 }
 
@@ -98,14 +73,12 @@ export const storeHomeMixin = {
   computed: {
     ...mapGetters([
       'offsetY',
-      'hotSearchOffsetY',
       'flapCardVisible'
     ])
   },
   methods: {
     ...mapActions([
       'setOffsetY',
-      'setHotSearchOffsetY',
       'setFlapCardVisible'
     ]),
     showBookDetail(book){
@@ -124,16 +97,10 @@ export const ebookMixin = {
       'fileName',
       'menuVisible',
       'settingVisible',
-      'defaultFontFamily',
-      'fontFamilyVisible',
       'defaultTheme',
       'offsetY',
       'isBookmark',
     ]),
-    // 写成计算属性不会频繁调用
-    // themeList() {
-    //   return themeList(this)
-    // },
     
   },
   methods: {
@@ -141,50 +108,32 @@ export const ebookMixin = {
       'setTitleList',
       'setCurrentPage',
       'setCurrentCpt',
-      'preCpt',
-      'nextCpt',
-      'prevPage',
-      'nextPage',
       'setFileName',
       'setMenuVisible',
       'setSettingVisible',
       'setDefaultFontSize',
-      'setDefaultFontFamily',
-      'setFontFamilyVisible',
       'setDefaultTheme',
       'setOffsetY',
       'setIsBookmark',
     ]),
-    initGlobalStyle() {
-      removeAllCss()
-      switch (this.defaultTheme) {
-        case 'Default':
-          
-          addCss('@/assets/theme/theme_default.css')
-          break
-        case 'Eye':
-          addCss('@/assets/theme/theme_eye.css')
-          break
-        case 'Gold':
-          addCss('@/assets/theme/theme_gold.css')
-          break
-        case 'Night':
-          addCss('@/assets/theme/theme_night.css') 
-          break
-        default:
-          addCss('@/assets/theme/theme_default.css')
-          break
-      }
-    },
    
-
     hideTitleAndMenu(){
       this.setMenuVisible(false)
       this.setSettingVisible(-1)
-      this.setFontFamilyVisible(false)
     }, 
     getReadTimeText(){
       return '已读$1分钟'.replace('$1', getReadTimeByMinute(this.fileName))
+    },
+    prevSection(){
+      if(this.currentCpt > 1){
+        this.setCurrentCpt(this.currentCpt - 1)
+      }
+    },
+    nextSection(){
+      if(this.currentCpt < 20){
+        this.setCurrentCpt(this.currentCpt + 1)
+      }
+      
     },
   }
 }

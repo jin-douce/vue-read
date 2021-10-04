@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { setLocalForage } from '../utils/localForage'
 
 
 axios.defaults.baseURL = process.env.VUE_APP_BASE_URL
@@ -128,30 +127,6 @@ export function register(params){
     method: 'post',
     url: '/register',
     data: params
-  })
-}
-export function download(book, onSuncess, onError, onProgress){
-  if(!onProgress){
-    onProgress = onError
-    onError = null
-  }
-  return axios.create({
-    baseURL: process.env.VUE_APP_EPUB_URL,
-    method: 'get',
-    responseType: 'blob',
-    timeout: 180*1000,
-    onDownloadProgress: progressEvent => {
-      if(onProgress) onProgress(progressEvent)
-    }
-  }).get(`${book.categoryText}/${book.fileName}.epub`).then(res => {
-    const blob = new Blob([res.data])
-    setLocalForage(book.fileName, blob, () => {
-      if(onSuncess) onSuncess(book)
-    }, err => {
-      if(onError) onError(err)
-    })
-  }).catch(err => {
-    if(onError) onError(err)
   })
 }
 

@@ -1,14 +1,12 @@
 <template>
-  <div class="shelf-footer">
-    <div class="shelf-footer-tab-wrapper" v-for="item in tabs" :key="item.index" @click="onTabClick(item)">
-      <div class="shelf-footer-tab" :class="{ 'is-selected': isSelected }">
-       
-        <div class="icon-move tab-icon" v-if="item.index === 1"></div>
-        <div class="icon-shelf tab-icon" v-if="item.index === 2"></div>
-        <div class="tab-text" :class="{ 'remove-text': item.index === 2 }">
-          {{ item.label }}
-        </div>
-      </div>
+  <div class="shelf-footer" v-show="isEditMode" :class="{ 'is-selected': shelfSelected.length }">
+    <div class="shelf-footer-tab" @click="showMove">
+      <span class="icon-move tab-icon"></span>
+      <span class="tab-text">移动到</span>  
+    </div>
+    <div class="shelf-footer-tab" @click="showRemove">
+      <span class="icon-share tab-icon"></span>
+      <span class="tab-text">{{ currentType===1 ? '移出书架' : '移出分组'}}</span>
     </div>
   </div>
 </template>
@@ -16,75 +14,18 @@
 <script>
 import { storeShelfMixin } from "../../utils/mixin";
 import {getBookShelf,saveBookShelf,removeLocalStorage,} from "../../utils/localStorage";
+import { computeId,} from "../../utils/store";
 
 export default {
   mixins: [storeShelfMixin],
-  computed: {
-    isSelected() {
-      return this.shelfSelected && this.shelfSelected.length > 0;
-    }, 
-    tabs() {
-      return [
-        {
-          label: '移动到',
-          index: 1,
-        },
-        {
-          label: '移出书架',
-          index: 2,
-        },
-      ];
-    },
-
-  },
   data() {
     return {
       popupMenu: null,
     };
   },
   methods: {
-    onComplete() {
-      // 隐藏弹窗；取消编辑状态；保存修改后的bookList
-      this.hidePopup();
-      this.setIsEditMode(false);
-      // shelfSelected是对象引用，它的变化会引起bookList的变化
-      saveBookShelf(this.bookList);
-    },
-    hidePopup() {
-      this.popupMenu.hide();
-    },
-
-    // 移出书架
-    removeSelected() {
-      
-      if(this.currentType === 2){
-          this.setShelfList(
-          this.shelfList.map((book) => {
-            if (book.types === 2 && book.itemList) {
-              // 只保留未选中的图书
-              book.itemList = book.itemList.filter(
-                (subBook) => !subBook.selected
-              );
-            }
-            return book;
-          })
-        )
-      }else if(this.currentType === 1){
-        this.setShelfList(this.shelfList.filter((book) => !book.selected));
-      }
-      
-  
-      this.setShelfSelected([]);
-      this.onComplete();
-      // console.log(this.shelfList);
-      saveBookShelf(this.shelfList);
-      // 保存未成功，get返回的是null
-      let ss = getBookShelf();
-      // console.log("缓存", ss);
-    },
     showRemove() {
-      let title = '是否将所选书籍移出书架？'
-     
+      let title = '是否将所选书籍移出？' 
       this.popupMenu = this.popup({
         title: title,
         btn: [
@@ -104,22 +45,39 @@ export default {
         ],
       }).show();
     },
-    onTabClick(item) {
-      if (!this.isSelected) {
-        return;
-      }
-      switch (item.index) {
-        case 1:
-          this.dialog().show();
-          break;
-        case 2:
-          this.showRemove();
-          break;
-        default:
-          break;
-      }
+    showMove(){
+      this.dialog().show();
     },
-  },
+    hidePopup() {
+      this.popupMenu.hide();
+    },
+    // 移出书架或移出分组
+    removeSelected() {  
+      if(this.currentType === 2){ 
+          this.moveOutFromGroup()
+      }else if(this.currentType === 1){  
+        this.setShelfList(this.shelfList.filter(book => !book.selected))
+        .then(() => {this.simpleToast('成功移出')
+        })
+      }
+      this.hidePopup();
+      this.setShelfSelected([]);
+      this.setIsEditMode(false);
+      saveBookShelf(this.shelfList);
+    },
+    moveOutFromGroup() {
+      let list = this.shelfList.map(book => {
+          if (book.types === 2 && book.itemList) {
+            book.itemList = book.itemList.filter(subBook => !subBook.selected)
+          }
+          return book;
+        })
+      list = computeId(list.concat(...this.shelfSelected))
+      this.setShelfList(list).then(() => {
+          this.simpleToast('成功移出');
+        });
+    }
+  }
 };
 </script>
 
@@ -134,34 +92,25 @@ export default {
   width: 100%;
   height: px2rem(48);
   background: white;
+  opacity: 0.5;
   box-shadow: 0 px2rem(-2) px2rem(4) 0 rgba(0, 0, 0, 0.1);
-  .shelf-footer-tab-wrapper {
+  &.is-selected {
+    opacity: 1;
+  }
+  
+  .shelf-footer-tab {
     flex: 1;
-    width: 25%;
+    width: 50%;
     height: 100%;
-    .shelf-footer-tab {
-      width: 100%;
-      height: 100%;
-      opacity: 0.5;
-      @include columnCenter;
-      &.is-selected {
-        opacity: 1;
-      }
-      .tab-icon {
-        font-size: px2rem(20);
-        color: #666;
-      }
-      .tab-text {
-        margin-top: px2rem(5);
-        font-size: px2rem(12);
-        color: #666;
-        &.remove-text {
-          color: red;
-        }
-      }
-      .icon-shelf {
-        color: red;
-      }
+    @include columnCenter;
+    .tab-icon {
+      font-size: px2rem(20);
+      color: #666;
+    }
+    .tab-text {
+      margin-top: px2rem(5);
+      font-size: px2rem(12);
+      color: #666;
     }
   }
 }

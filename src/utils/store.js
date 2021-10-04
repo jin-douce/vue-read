@@ -1,34 +1,9 @@
-import { getLocalStorage, setLocalStorage, getBookShelf, saveBookShelf } from './localStorage'
-
-
-// 加入书架
-export function addToShelf(book){
-  let shelfList = getBookShelf()
-  shelfList = removeAddFromShelf(shelfList) //去掉空的
-  book.types = 1
-  shelfList.push(book)
-  shelfList = computeId(shelfList)
-  shelfList = appendAddToShelf(shelfList) //再加上空的
-  saveBookShelf( shelfList) //保存到localStorage
-  
-}
-// 从书架移除
-export function removeFromBookShelf(book){
-  return getBookShelf().filter(item => {
-    if(item.itemList){
-      item.itemList = removeAddFromShelf(item.itemList)
-    }
-    return item.name !== book.name
-  })
-}
 export function computeId(list){
   return list.map((book, index) => {
-    if(book.types !== 3){
       book.ids = index + 1
       if(book.itemList){
         book.itemList = computeId(book.itemList)
       }
-    }
     return book
   })
 }
@@ -39,23 +14,13 @@ export function gotoBookDetail(vue, book){
     query: { bookId: book.id }
   })
 }
+
 export function gotoStoreHome(vue){
   vue.$router.push({
     path: '/store/home'
   })
 }
 
-export function appendAddToShelf(list){
-  list.push({
-    ids: -1,
-    types: 3
-  })
-  return list
-}
-
-export function removeAddFromShelf(list){
-  return list.filter(item => item.types !== 3)
-}
 
 export const flapCardList = [
   {
@@ -118,33 +83,33 @@ export const flapCardList = [
 export const categoryList = {
   '武侠': {
     typeId: 1,
-    img1:'http://qidian.qpic.cn/qdbimg/349573/3258971/150',
-    img2:'http://qidian.qpic.cn/qdbimg/349573/1003306811/150'
+    img1:'https://www.xbiquge.la/files/article/image/43/43943/43943s.jpg',
+    img2:'https://www.xbiquge.la/files/article/image/44/44820/44820s.jpg'
   },
   '网游':{
     typeId: 2,
-    img1:'http://qidian.qpic.cn/qdbimg/349573/1887208/150',
-    img2:'https://img1.baidu.com/it/u=2490823398,3958203158&fm=11&fmt=auto&gp=0.jpg'
-  },
-  '都市': {
-    typeId: 3,
-    img1:'https://img2.baidu.com/it/u=1058255448,2546329895&fm=26&fmt=auto&gp=0.jpg',
-    img2:'https://img1.baidu.com/it/u=1469198532,1738379713&fm=26&fmt=auto&gp=0.jpg'
-  },
-  '历史': {
-    typeId: 4,
-    img1:'https://img0.baidu.com/it/u=1633361218,3733847676&fm=26&fmt=auto&gp=0.jpg',
-    img2:'https://img0.baidu.com/it/u=442248440,1263154732&fm=253&fmt=auto&app=120&f=JPEG?w=411&h=600'
+    img1:'https://www.xbiquge.la/files/article/image/72/72575/72575s.jpg',
+    img2:'https://www.xbiquge.la/files/article/image/79/79721/79721s.jpg'
   },
   '玄幻': {
-    typeId: 5,
-    img1:'https://img0.baidu.com/it/u=3802571101,3071724873&fm=26&fmt=auto&gp=0.jpg',
-    img2:'https://img2.baidu.com/it/u=2053134301,1117134931&fm=26&fmt=auto&gp=0.jpg'
+    typeId: 3,
+    img1:'https://www.xbiquge.la/files/article/image/0/8/8s.jpg',
+    img2:'https://www.xbiquge.la/files/article/image/39/39017/39017s.jpg'
   },
-  '其他': {
+  '穿越': {
+    typeId: 4,
+    img1:'https://www.xbiquge.la/files/article/image/28/28056/28056s.jpg',
+    img2:'https://www.xbiquge.la/files/article/image/1/1690/1690s.jpg'
+  },
+  '都市': {
+    typeId: 5,
+    img1:'https://www.xbiquge.la/files/article/image/29/29770/29770s.jpg',
+    img2:'https://www.xbiquge.la/files/article/image/63/63436/63436s.jpg'
+  },
+  '科幻': {
     typeId: 6,
-    img1:'https://img0.baidu.com/it/u=1256871257,3654759602&fm=26&fmt=auto&gp=0.jpg',
-    img2:'https://img2.baidu.com/it/u=2513324971,2361514946&fm=26&fmt=auto&gp=0.jpg'
+    img1:'https://www.xbiquge.la/files/article/image/11/11433/11433s.jpg',
+    img2:'https://www.xbiquge.la/files/article/image/26/26136/26136s.jpg'
   }, 
 }
 

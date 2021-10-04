@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icomoon';
-  src:  url('fonts/icomoon.eot?8pbaj6');
-  src:  url('fonts/icomoon.eot?8pbaj6#iefix') format('embedded-opentype'),
-    url('fonts/icomoon.ttf?8pbaj6') format('truetype'),
-    url('fonts/icomoon.woff?8pbaj6') format('woff'),
-    url('fonts/icomoon.svg?8pbaj6#icomoon') format('svg');
+  src:  url('fonts/icomoon.eot?6g88bb');
+  src:  url('fonts/icomoon.eot?6g88bb#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?6g88bb') format('truetype'),
+    url('fonts/icomoon.woff?6g88bb') format('woff'),
+    url('fonts/icomoon.svg?6g88bb#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -25,134 +25,82 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-A:before {
+.icon-bookmark:before {
   content: "\e900";
+  color: #1296db;
+}
+.icon-A:before {
+  content: "\e90c";
 }
 .icon-add:before {
-  content: "\e901";
+  content: "\e919";
 }
 .icon-back:before {
-  content: "\e902";
+  content: "\e91a";
 }
 .icon-book:before {
-  content: "\e903";
+  content: "\e929";
   color: #666;
 }
 .icon-book2:before {
-  content: "\e904";
-}
-.icon-bookmark:before {
-  content: "\e905";
+  content: "\e92a";
 }
 .icon-bright:before {
-  content: "\e906";
-}
-.icon-cart:before {
-  content: "\e907";
+  content: "\e92c";
 }
 .icon-check:before {
-  content: "\e908";
-}
-.icon-clock:before {
-  content: "\e909";
-  color: #666;
+  content: "\e92d";
 }
 .icon-close:before {
-  content: "\e90a";
+  content: "\e92e";
 }
 .icon-close-circle-fill:before {
-  content: "\e90b";
-}
-.icon-cn:before {
-  content: "\e90c";
+  content: "\e92f";
 }
 .icon-down:before {
-  content: "\e90d";
+  content: "\e930";
 }
 .icon-down2:before {
-  content: "\e90e";
-}
-.icon-download:before {
-  content: "\e90f";
-}
-.icon-download-remove:before {
-  content: "\e910";
-}
-.icon-en:before {
-  content: "\e911";
-}
-.icon-forward:before {
-  content: "\e912";
-}
-.icon-headphone .path1:before {
-  content: "\e913";
-  color: rgb(204, 209, 219);
-}
-.icon-headphone .path2:before {
-  content: "\e914";
-  margin-left: -1em;
-  color: rgb(31, 36, 48);
+  content: "\e931";
 }
 .icon-menu:before {
-  content: "\e915";
+  content: "\e932";
 }
 .icon-more:before {
-  content: "\e916";
+  content: "\e933";
 }
 .icon-move:before {
-  content: "\e917";
+  content: "\e934";
   color: #4d4d4d;
 }
 .icon-person:before {
-  content: "\e918";
-}
-.icon-play-backward:before {
-  content: "\e919";
-}
-.icon-play-forward:before {
-  content: "\e91a";
-}
-.icon-play-go:before {
-  content: "\e91b";
-}
-.icon-play-pause:before {
-  content: "\e91c";
-}
-.icon-private:before {
-  content: "\e91d";
-}
-.icon-private-see:before {
-  content: "\e91e";
+  content: "\e935";
 }
 .icon-progress:before {
-  content: "\e91f";
+  content: "\e936";
 }
 .icon-pull-down:before {
-  content: "\e920";
+  content: "\e937";
   color: #525c6a;
 }
 .icon-search:before {
-  content: "\e921";
+  content: "\e938";
 }
 .icon-selected:before {
-  content: "\e922";
+  content: "\e939";
 }
 .icon-settings:before {
-  content: "\e923";
+  content: "\e93a";
 }
 .icon-shake:before {
-  content: "\e924";
+  content: "\e93b";
 }
 .icon-share:before {
-  content: "\e925";
+  content: "\e93c";
 }
 .icon-shelf:before {
-  content: "\e926";
-}
-.icon-speak:before {
-  content: "\e927";
-  color: #8997b2;
+  content: "\e93d";
 }
 .icon-up:before {
-  content: "\e928";
+  content: "\e93e";
 }

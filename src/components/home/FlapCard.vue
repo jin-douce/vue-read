@@ -194,9 +194,6 @@ export default {
       }, 2500);
     }
   },
-  mounted() {
-    // console.log(this.data);
-  },
 };
 </script>
 

@@ -1,13 +1,9 @@
 <template>
-  <div class="shelf-list" :style="{ top: shelfListTop }">
-    <transition-group name="list" tag="div" id="shelf-list">
-      <div class="shelf-list-item-wrapper" v-for="item in data" :key="item.ids">
+  <div class="shelf-list">
+    <div class="item-wrapper" v-for="item in data" :key="item.ids">
         <shelf-item :data="item" :style="{ height: itemHeight }"></shelf-item>
-        <div class="shelf-list-title-wrapper">
-          <span class="shelf-list-title title-small">{{ item.name }}</span>
-        </div>
-      </div>
-    </transition-group>
+        <div class="title-wrapper">{{ item.types===1 ? item.name : '分组'+item.title}}</div>
+    </div>
   </div>
 </template>
 
@@ -22,19 +18,12 @@ export default {
     ShelfItem,
   },
   props: {
-    top: {
-      type: Number,
-      default: 64,
-    },
     data: Array,
   },
   computed: {
-    shelfListTop() {
-      return px2rem(this.top) + "rem";
-    },
     itemHeight() {
-      // return ((window.innerWidth - realPx(120)) / 3 / 250) * 350 + "px";
-      return window.innerHeight / 3
+      return ((window.innerWidth - realPx(120)) / 3 / 250) * 350 + "px";
+      // 宽度为1/3，根据宽度和比例计算高度
     },
   },
 };
@@ -45,29 +34,29 @@ export default {
 .shelf-list {
   position: absolute;
   left: 0;
+  top: px2rem(52);
   width: 100%;
   z-index: 100;
-  #shelf-list {
-    display: flex;
-    flex-flow: row wrap;
-    width: 100%;
-    padding: 0 px2rem(15);
+  display: flex;
+  flex-flow: row wrap;
+  padding: 0 px2rem(15);
+  box-sizing: border-box;
+  .item-wrapper {
+    flex: 0 0 33.33%;
+    width: 33.33%;
+    padding: px2rem(15);
     box-sizing: border-box;
-    .shelf-list-item-wrapper {
-      flex: 0 0 33.33%;
-      width: 33.33%;
-      padding: px2rem(15);
-      box-sizing: border-box;
-      &.list-leave-active {
-        display: none;
-      }
-      &.list-move {
-        transition: transform 0.5s;
-      }
-      .shelf-list-title-wrapper {
-        margin-top: px2rem(10);
-      }
+    &.list-leave-active {
+      display: none;
+    }
+    &.list-move {
+      transition: transform 0.5s;
+    }
+    .title-wrapper {
+      margin-top: px2rem(15);
+      font-size: px2rem(10);
     }
   }
+
 }
 </style>

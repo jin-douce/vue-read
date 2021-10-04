@@ -1,37 +1,26 @@
 <template>
-  <transition name="fade">
-    <div class="shelf-title" :class="{ 'hide-shadow': ifHideShadow }" v-show="shelfTitleVisible">
-      <div class="shelf-title-text-wrapper">
+  <div class="shelf-title" v-show="shelfTitleVisible">
+      <div class="text-wrapper">
         <span class="shelf-title-text">{{ title }}</span>
-        <span class="shelf-title-sub-text" v-show="isEditMode">{{selectedText}}</span>
+        <span class="sub-text" v-show="isEditMode">{{selectedText}}</span>
       </div>
-      <div class="shelf-title-btn-wrapper shelf-title-left" v-if="showClear">
-        <span class="shelf-title-btn-text" @click="gotoStore">去找书</span>
+      <div class="btn-wrapper left" v-if="currentType === 1">
+        <span class="btn-text" @click="gotoStore">去找书</span>
       </div>
-      <div class="shelf-title-btn-wrapper shelf-title-right" v-if="showEdit">
-        <span class="shelf-title-btn-text" @click="onEditClick">{{isEditMode ? '取消' : '编辑'}}</span>
+      <div class="btn-wrapper right" v-if="currentType === 1 || !this.emptyCategory">
+        <span class="btn-text" @click="onEditClick">{{isEditMode ? '取消' : '编辑'}}</span>
       </div>
-      <div class="shelf-title-btn-wrapper shelf-title-left" v-if="showBack">
-        <span class="icon-back" @click="back"></span>
+      <div class="btn-wrapper left" v-if="this.currentType === 2">
+        <span class="btn-text" @click="back">返回</span>
       </div>
-      <div
-        class="shelf-title-btn-wrapper"
-        :class="{
-          'shelf-title-left': changeGroupLeft,
-          'shelf-title-right': changeGroupRight,
-        }"
-        @click="changeGroup"
-        v-if="showChangeGroup"
-      >
-        <span class="shelf-title-btn-text">修改分组</span>
+      <div class="btn-wrapper right" v-if="currentType === 2 && this.emptyCategory">
+        <span class="btn-text" @click="removeGroup">删除分组</span>
       </div>
-    </div>
-  </transition>
+  </div>
 </template>
 
 <script>
 import { storeShelfMixin } from "../../utils/mixin";
-import { clearLocalForage } from "../../utils/localForage";
 import { clearLocalStorage, saveBookShelf } from "../../utils/localStorage";
 export default {
   mixins: [storeShelfMixin],
@@ -46,51 +35,16 @@ export default {
         this.shelfCategory.itemList.length === 0
       );
     },
-    showEdit() {
-      return this.currentType === 1 || !this.emptyCategory;
-    },
-    showClear() {
-      return this.currentType === 1;
-    },
-    showBack() {
-      return this.currentType === 2 && !this.isEditMode;
-    },
-    showChangeGroup() {
-      return this.currentType === 2 && (this.isEditMode || this.emptyCategory);
-    },
-    changeGroupLeft() {
-      return !this.emptyCategory;
-    },
-    changeGroupRight() {
-      return this.emptyCategory;
-    },
+
     selectedText() {
       const selectedNumber = this.shelfSelected ? this.shelfSelected.length : 0;
-      return selectedNumber <= 0
-        ? '选择书籍'
-        : selectedNumber === 1
-        ? '已选择$1本'.replace("$1", selectedNumber)
-        : '已选择$1本'.replace("$1", selectedNumber);
+      return selectedNumber <= 0 ? '选择书籍' : '已选择$1本'.replace("$1", selectedNumber)
     },
     popupCancelBtn() {
       return this.createPopupBtn('取消', () => {
         this.hidePopup();
       });
     },
-  },
-  watch: {
-    offsetY(offsetY) {
-      if (offsetY > 0) {
-        this.ifHideShadow = false;
-      } else {
-        this.ifHideShadow = true;
-      }
-    },
-  },
-  data() {
-    return {
-      ifHideShadow: true,
-    };
   },
   methods: {
     onComplete() {
@@ -103,22 +57,7 @@ export default {
         this.setIsEditMode(false);
       });
     },
-    deleteGroup() {
-      if (!this.emptyCategory) {
-        // itemList全部置位选中状态
-        this.setShelfSelected(this.shelfCategory.itemList);
-        this.moveOutOfGroup(this.onComplete);
-      } else {
-        this.onComplete();
-      }
-    },
-    changeGroupName() {
-      this.hidePopup();
-      this.dialog({
-        showNewGroup: true,
-        groupName: this.shelfCategory.title,
-      }).show();
-    },
+
     hidePopup() {
       this.popupMenu.hide();
     },
@@ -129,41 +68,7 @@ export default {
         click: onClick,
       };
     },
-    showDeleteGroup() {
-      this.hidePopup();
-      setTimeout(() => {
-        this.popupMenu = this.popup({
-          title: '删除分组后，分组内的书籍将会自动移出分组',
-          btn: [
-            this.createPopupBtn(
-              '确定',
-              () => {
-                this.deleteGroup();
-              },
-              "danger"
-            ),
-            this.popupCancelBtn,
-          ],
-        }).show();
-      }, 200);
-    },
-    changeGroup() {
-      this.popupMenu = this.popup({
-        btn: [
-          this.createPopupBtn('修改分组名', () => {
-            this.changeGroupName();
-          }),
-          this.createPopupBtn(
-            '解散分组',
-            () => {
-              this.showDeleteGroup();
-            },
-            "danger"
-          ),
-          this.popupCancelBtn,
-        ],
-      }).show();
-    },
+
     back() {
       this.$router.go(-1);
       this.setIsEditMode(false);
@@ -183,16 +88,14 @@ export default {
       }
       this.setIsEditMode(!this.isEditMode);
     },
-    clearCache() {
-      clearLocalStorage();
-      clearLocalForage();
-      this.setShelfList([]);
-      this.setShelfSelected([]);
-      this.getShelfList();
-      this.simpleToast('缓存已清空');
-    },
     gotoStore(){
       this.$router.push("/store/home");
+    },
+    removeGroup(){
+      this.setShelfList(this.shelfList.filter(book => book.ids!==this.shelfCategory.ids))
+        .then(() => { this.simpleToast('成功删除分组')})
+      saveBookShelf(this.shelfList);
+      this.$router.push("/store/shelf");
     }
   },
 };
@@ -200,7 +103,7 @@ export default {
 
 <style lang="scss" rel="stylesheet/scss" scoped>
 @import "../../assets/styles/global";
-
+ 
 .shelf-title {
   position: relative;
   z-index: 130;
@@ -208,10 +111,8 @@ export default {
   height: px2rem(42);
   background: rgb(208, 241, 154);
   box-shadow: 0 px2rem(2) px2rem(2) 0 rgba(0, 0, 0, 0.1);
-  &.hide-shadow {
-    box-shadow: none;
-  }
-  .shelf-title-text-wrapper {
+
+  .text-wrapper {
     position: absolute;
     top: 0;
     left: 0;
@@ -224,18 +125,18 @@ export default {
       font-weight: bold;
       color: #333;
     }
-    .shelf-title-sub-text {
+    .sub-text {
       font-size: px2rem(10);
       color: #333;
     }
   }
-  .shelf-title-btn-wrapper {
+  .btn-wrapper {
     position: absolute;
     top: 0;
     box-sizing: border-box;
     height: 100%;
     @include center;
-    .shelf-title-btn-text {
+    .btn-text {
       font-size: px2rem(14);
       color: #666;
     }
@@ -243,11 +144,11 @@ export default {
       font-size: px2rem(20);
       color: #666;
     }
-    &.shelf-title-left {
+    &.left {
       left: 0;
       padding-left: px2rem(15);
     }
-    &.shelf-title-right {
+    &.right {
       right: 0;
       padding-right: px2rem(15);
     }

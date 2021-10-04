@@ -1,21 +1,17 @@
 const store = {
   state: {
     userInfo: null,
-    hotSearchOffsetY: 0,
     flapCardVisible: false,
     isEditMode: false,
     shelfList: [],
-    shelfSelected: [],
+    shelfSelected: [],//所有item
     shelfTitleVisible: true,
-    shelfCategory: [], // 书架分组列表数据
+    shelfCategory: [], // 当前的第二类item
     currentType: 1 // 书架列表为1，书架分组列表为2
   },
   mutations: {
     SET_USER_INFO(state, info){
       state.userInfo = info
-    },
-    SET_HOT_SEARCH_OFFSETY(state, y) {
-      state.hotSearchOffsetY = y
     },
     SET_FLAP_CARD_VISIBLE(state, visible) {
       state.flapCardVisible = visible

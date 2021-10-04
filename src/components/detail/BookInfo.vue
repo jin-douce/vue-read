@@ -10,8 +10,8 @@
       <div class="cover-author-wrapper">
         <div class="cover-author-text">{{ author }}</div>
       </div>
-      <div class="detail-cover-description-wrapper">
-        <div class="detail-cover-description-text">{{ desc }}</div>
+      <div class="description-wrapper">
+        <div class="description-text">{{ desc }}</div>
       </div>
     </div>
   </div>
@@ -66,9 +66,9 @@ export default {
         color: rgb(126, 126, 252);
       }
     }
-    .detail-cover-description-wrapper {
+    .description-wrapper {
       margin-top: px2rem(10);
-      .detail-cover-description-text {
+      .description-text {
         font-size: px2rem(14);
         line-height: px2rem(16);
         color: #666;

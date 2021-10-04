@@ -1,15 +1,9 @@
 <template>
   <div class="ebook-reader">
-    <div id="read" :style="{backgroundColor: defaultTheme.bgc, 
-                              color:defaultTheme.color,
-                              fontSize:`${defaultFontSize}px`}"
-    >
-      <!-- <div id="page">
-      </div> -->
+    <div id="read" :style="{backgroundColor: defaultTheme.bgc, color:defaultTheme.color, fontSize:`${defaultFontSize}px`}">
     </div>
-<!-- 在蒙板上绑定事件，用于书签下拉的实现 -->
-    <div
-      class="ebook-reader-mask"
+    <!-- 在蒙板上绑定事件，用于书签下拉的实现 -->
+    <div class="ebook-reader-mask"
       @click="onMaskClick"
       @touchmove="move"
       @touchend="moveEnd"
@@ -46,6 +40,8 @@ export default {
           words:'',
           maxpage: 0,
           counts: 0,
+          map: [],
+          last: false
       }
   },
   watch: {   
@@ -72,7 +68,6 @@ export default {
   },
   methods: {
     move(e) {
-      // console.log(e);
       let offsetY = 0;
       if (this.firstOffsetY) {
         offsetY = e.changedTouches[0].clientY - this.firstOffsetY;
@@ -84,8 +79,6 @@ export default {
       e.stopPropagation();
     },
     moveEnd(e) {
-      // console.log(e);
-      // this.$store.dispatch('setOffsetY', 0)
       this.firstOffsetY = 0;
       this.setOffsetY(0);
     },
@@ -137,10 +130,10 @@ export default {
       if (offsetX > 0 && offsetX < width * 0.3) {
         // 点击屏幕左侧
         if(this.currentPage>0){
-          this.prevPage()
+          this.setCurrentPage(this.currentPage-1)
         }else if(this.currentCpt>1){
-          this.preCpt()
-          this.setCurrentPage(0)
+          this.prevSection()
+          this.last = true
         }else return false
 
         this.hideTitleAndMenu();
@@ -148,10 +141,9 @@ export default {
       } else if (offsetX > 0 && offsetX > width * 0.7) {
         // 点击右侧屏幕
         if(this.currentPage < this.maxpage-1){
-          this.nextPage()
+          this.setCurrentPage(this.currentPage+1)
         }else if(this.currentCpt<20){
-          this.nextCpt()
-          this.setCurrentPage(0)
+          this.nextSection()
 
         }else return false
         
@@ -164,20 +156,10 @@ export default {
     toggleTitleAndMenu() {
       if (this.menuVisible) {
         this.setSettingVisible(-1);
-        this.setFontFamilyVisible(false);
       }
       this.setMenuVisible(!this.menuVisible);
     },
 
-    initFontFamily() {
-      let font = getFontFamily(this.fileName);
-      if (!font) {
-        saveFontFamily(this.fileName, this.defaultFontFamily);
-      } else {
-        this.rendition.themes.font(font);
-        this.setDefaultFontFamily(font);
-      }
-    },
 
     paginate(){
 
@@ -213,6 +195,8 @@ export default {
       page.firstChild.nodeValue = text
       box.insertBefore(page.cloneNode(true), page)
       this.maxpage++  
+      // 记录每一章最大页数
+      this.map[this.currentCpt]=this.maxpage
 
       this.children = box.children
       for(let k=0;k<this.children.length;k++){
@@ -222,6 +206,7 @@ export default {
       if(this.currentPage>=this.maxpage){
         this.children[this.maxpage-1].style.display='block'
       }
+
     },
 
     setFT(){
@@ -258,10 +243,15 @@ export default {
       getBookContent(this.bookId, this.currentCpt).then(res => {
                     this.title = res.title;
                     this.result=res
-                    this.words = res.content.replace(/-/g,'\n') 
+                    this.words = res.content.replace(/-/g,'').split('')
 
                     // 分页
                     this.paginate()
+                }).then(()=>{
+                  if(this.last){
+                    this.setCurrentPage(this.map[this.currentCpt])
+                    this.last = false
+                  }else this.setCurrentPage(0)
                 })
     },
     refresh(){
@@ -299,12 +289,6 @@ export default {
     height: 100%;
     padding: 15px;
     line-height:30px;
-
-    #page {
-      // border: 1px solid black;
-      // padding: 10px;
-    }
-
   }
 
   .ebook-reader-mask {

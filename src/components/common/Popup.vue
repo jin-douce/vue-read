@@ -1,25 +1,14 @@
 <template>
   <div class="popup" v-if="popupVisible">
     <transition name="fade">
-      <div
-        class="popup-bg"
-        @click.stop.prevent="hide"
-        v-show="popupVisible"
-      ></div>
+      <div class="popup-bg" @click.stop.prevent="hide" v-show="popupVisible"></div>
     </transition>
     <transition name="popup-slide-up">
       <div class="popup-wrapper" v-show="visible">
-        <div class="popup-title" v-if="title && title.length > 0">
-          {{ title }}
-        </div>
-        <div
-          class="popup-btn"
-          :class="{ danger: item.type === 'danger' }"
-          v-for="(item, index) in btn"
-          :key="index"
-          @click="item.click"
-        >
-          {{ item.text }}
+        <div class="popup-title" v-if="title && title.length > 0">{{ title }}</div>
+        <div class="popup-btn" :class="{ danger: item.type === 'danger' }"
+          v-for="(item, index) in btn" :key="index" @click="item.click"
+        >{{ item.text }}
         </div>
       </div>
     </transition>

@@ -60,7 +60,6 @@
       box-shadow: none;
     }
     .title-left-wrapper {
-      position: relative;
       z-index: 200;
       flex: 1;
       margin-left: px2rem(15);
@@ -71,7 +70,6 @@
       }
     }
     .title-right-wrapper {
-      position: relative;
       z-index: 200;
       flex: 1;
       margin-right: px2rem(15);

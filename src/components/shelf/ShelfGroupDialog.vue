@@ -1,54 +1,41 @@
 <!-- 移动分组时的弹出框 -->
 <template>
-  <ebook-dialog :title="title" ref="dialog">
+  <ebook-dialog :title="!ifNewGroup ? '书籍分组' : '新建分组'" ref="dialog">
     <!-- 替换第一个slot -->
-        <!-- 1.移动分组 -->
+        <!-- 1.移动分组是用这个替换 -->
     <div class="dialog-list-wrapper" v-if="!ifNewGroup">
-      <template v-for="(item, index) in categoryList">
-            <!-- 所有分组列表 -->
-        <div class="dialog-list-item"
-          :class="{ 'is-add': item.edit ? item.edit === 1 : false }"
-          :key="index" @click="onGroupClick(item)"
-          v-if="(item.edit === 2 && isInGroup) || item.edit !== 2 || !item.edit"
-        >
+      <div class="is-add" @click="showAdd">新建分组</div>
+      <div class="dialog-list-item" v-for="(item, index) in category" :key="index" @click="moveToGroup(item)">    
           <div class="dialog-list-item-text">{{ item.title }}</div>
-            <!-- 当前所在分组 -->
-          <div class="dialog-list-icon-wrapper" v-if="isInGroup && shelfCategory.ids === item.ids">
+          <div class="dialog-list-icon-wrapper" v-if="currentType === 2 && shelfCategory.ids === item.ids">
             <span class="icon-selected"></span>
           </div>
-        </div>
-      </template>
+      </div>
     </div>
-          <!-- 2.新建分组 -->
+          <!-- 2.新建分组时用这个 -->
     <div class="dialog-new-group-wrapper" v-else>
       <div class="dialog-input-title-wrapper">
         <span>分组名</span>
       </div>
       <div class="dialog-input-wrapper">
-        <div class="dialog-input-inner-wrapper">
           <input type="text" class="dialog-input" v-model="newGroupName" ref="dialogInput"/>
-          <div class="dialog-input-clear-wrapper" @click="clear"
-            v-show="newGroupName && newGroupName.length > 0">
+          <div class="dialog-input-clear-wrapper" @click="clear">
             <span class="icon-close-circle-fill"></span>
           </div>
-        </div>
       </div>
     </div>
     <!-- 替换第二个slot -->
     <div slot="btn" class="group-dialog-btn-wrapper">
       <div class="dialog-btn" @click="hide">取消</div>
-      <div class="dialog-btn" @click="createNewGroup" v-if="ifNewGroup"
-       :class="{ 'is-empty': newGroupName && newGroupName.length === 0 }">
-       确定
-      </div>
+      <div class="dialog-btn" @click="createNewGroup" v-if="ifNewGroup">确定</div>
     </div>
   </ebook-dialog>
 </template>
 
-<script>
+<script> 
 import EbookDialog from "../common/Dialog";
 import { storeShelfMixin } from "../../utils/mixin";
-import { removeAddFromShelf, appendAddToShelf, computeId,} from "../../utils/store";
+import { computeId,} from "../../utils/store";
 import { saveBookShelf } from "../../utils/localStorage";
 
 export default {
@@ -57,53 +44,20 @@ export default {
   components: {
     EbookDialog,
   },
-  props: {
-    showNewGroup: {
-      type: Boolean,
-      default: false,
-    },
-    groupName: String,
-  }, 
-  computed: {
-    isInGroup() {
-      return this.currentType === 2;
-    },
-    defaultCategory() {
-      return [
-        {
-          title: '新建分组',
-          edit: 1,
-        },
-        {
-          title: '移出分组',
-          edit: 2,
-        },
-      ];
-    },
-    // 所有分组
-    category() {
-      return this.shelfList.filter((item) => item.types === 2);
-    },
-    // 所有分组合并上新建和移出选项
-    categoryList() {
-      return [...this.defaultCategory, ...this.category];
-    },
-    title() {
-      return !this.ifNewGroup
-        ? '书籍分组'
-        : '新建分组';
-    },
-  },
+
   data() {
     return {
       ifNewGroup: false,
       newGroupName: "",
     };
   },
+  computed: {
+    category () {
+      return this.shelfList.filter(item => item.types === 2)
+    },
+  },
   methods: {
     show() {
-      this.ifNewGroup = this.showNewGroup;
-      this.newGroupName = this.groupName;
       this.$refs.dialog.show();
     },
     hide() {
@@ -113,28 +67,19 @@ export default {
         this.ifNewGroup = false;
       }, 200);
     },
-    onGroupClick(item) {
-      if (item.edit && item.edit === 1) { //点击了新建分组
-        this.ifNewGroup = true;
-      } else if (item.edit && item.edit === 2) { //点击了移出分组
-        this.moveOutFromGroup(item);
-      } else {
-        this.moveToGroup(item); //将所有选中的书籍移入被点击的分组
-      }
+    showAdd(){
+      this.ifNewGroup = true
     },
     clear() {
       this.newGroupName = "";
     },
     moveToGroup(group) {
       this.setShelfList(
-        this.shelfList.filter((book) => {
+        this.shelfList.filter(book => {
           if (book.itemList) {
-            // 过滤选中图书
-            book.itemList = book.itemList.filter(
-              (subBook) => this.shelfSelected.indexOf(subBook) < 0
-            );
+            book.itemList = book.itemList.filter(sub => !sub.selected);
           }
-          return this.shelfSelected.indexOf(book) < 0;
+          return !book.selected;
         })
       ).then(() => {
         // 将选中的图书和指定的分组合并
@@ -152,34 +97,26 @@ export default {
         this.onComplete();
       });
     },
-    moveOutFromGroup(item) {
-      this.moveOutOfGroup(this.onComplete);
-    },
+    
     createNewGroup() {
       if (!this.newGroupName || this.newGroupName.length === 0) {
         return;
       }
-      if (this.showNewGroup) {
-        // 修改分组名称
-        this.shelfCategory.title = this.newGroupName;
-        this.onComplete();
-      } else {
-        // 创建新分组
-        const group = {
-          ids: this.shelfList[this.shelfList.length - 2].ids + 1,
-          itemList: [],
-          selected: false,
-          title: this.newGroupName,
-          types: 2,
-        };
-        let list = removeAddFromShelf(this.shelfList);
-        list.push(group);
-        list = appendAddToShelf(list);
-        this.setShelfList(list).then(() => {
-          this.moveToGroup(group);
-        });
-      }
+      // 创建新分组
+      const group = {
+        ids: this.shelfList[this.shelfList.length - 1].ids + 1,
+        itemList: [],
+        selected: false,
+        title: this.newGroupName,
+        types: 2,
+      };
+      let list = this.shelfList
+      list.push(group)
+      this.setShelfList(list)
+      this.moveToGroup(group);
+      this.onComplete()
     },
+    
     onComplete() {
       saveBookShelf(this.shelfList);
       this.hide();
@@ -198,17 +135,16 @@ export default {
   box-sizing: border-box;
   font-size: px2rem(14);
   @include scroll;
+  .is-add {
+    color: rgb(100, 176, 226);
+    margin-bottom: px2rem(10);
+  }
   .dialog-list-item {
     display: flex;
     padding: px2rem(15) 0;
     box-sizing: border-box;
     color: #666;
-    &.is-add {
-      color: rgb(100, 176, 226);
-      &:active {
-        color: rgb(166, 198, 219);
-      }
-    }
+    
     &:active {
       color: rgba(102, 102, 102, 0.5);
     }
@@ -232,13 +168,9 @@ export default {
     margin-top: px2rem(20);
   }
   .dialog-input-wrapper {
-    width: 100%;
-    padding: 0 0 px2rem(30) 0;
-    box-sizing: border-box;
-    .dialog-input-inner-wrapper {
       display: flex;
       width: 100%;
-      padding: px2rem(10) 0;
+      padding: px2rem(10) 0 px2rem(30) 0;;
       box-sizing: border-box;
       border-bottom: px2rem(1) solid rgb(202, 200, 200);
       font-size: px2rem(14);
@@ -259,7 +191,6 @@ export default {
         }
       }
     }
-  }
 }
 
 .group-dialog-btn-wrapper {
@@ -269,9 +200,6 @@ export default {
 
 .dialog-btn {
   flex: 1;
-  &.is-empty {
-    color: rgba(255, 255, 255, 0.5);
-  }
   &:active {
     color: rgba(255, 255, 255, 0.5);
   }

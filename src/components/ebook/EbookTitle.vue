@@ -4,17 +4,6 @@
       <div class="left">
         <span class="icon-back" @click="back"></span>
       </div>
-      <!-- <div class="right">
-        <div class="icon-wrapper">
-          <span class="icon-shelf"></span>
-        </div>
-        <div class="icon-wrapper">
-          <span class="icon-cart"></span>
-        </div>
-        <div class="icon-wrapper">
-          <span class="icon-more"></span>
-        </div>
-      </div> -->
     </div>
   </transition>
 </template>
@@ -30,7 +19,7 @@ export default {
   },
 };
 </script>
-
+ 
 <style lang="scss" rel="stylesheet/scss" scoped>
 @import "../../assets/styles/global";
 .title-wrapper {
@@ -48,18 +37,6 @@ export default {
     flex: 0 0 px2rem(60);
     @include left;
     margin-left: px2rem(15);
-  }
-  .right {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    .icon-wrapper {
-      flex: 0 0 px2rem(40);
-      @include center;
-      .icon-cart {
-        font-size: px2rem(24);
-      }
-    }
   }
 }
 </style>

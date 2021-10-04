@@ -1,8 +1,5 @@
 <template>
-  <div class="scroll-wrapper" 
-        :class="{'no-scroll': ifNoScroll}" 
-        @scroll.passive="handleScroll" 
-        ref="scrollWrapper">
+  <div class="scroll-wrapper" :class="{'no-scroll': ifNoScroll}" @scroll.passive="handleScroll" ref="scrollWrapper">
     <slot></slot>
   </div>
 </template>

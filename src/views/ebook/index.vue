@@ -1,5 +1,6 @@
 <template>
   <div class="ebook" ref="ebook">
+    <!-- 组件都是绝对定位 -->
     <ebook-title></ebook-title>
     <ebook-reader></ebook-reader>
     <ebook-menu></ebook-menu>
@@ -28,7 +29,7 @@ export default {
            if(v > 0){
             this.move(v)
           }else if(v === 0){
-            this.restore()
+            this.restore() 
           }
         }
       }
@@ -36,7 +37,8 @@ export default {
     methods: {
       restore(){
         this.$refs.ebook.style.top = 0
-        this.$refs.ebook.style.transition = 'all .2s linear'
+        this.$refs.ebook.style.transition = 'all .2s linear' //归位时加上过渡动画
+        // 0.2s后即归位完成后要清除，否则下次往下拉时也会有动画
         setTimeout(() => {
           this.$refs.ebook.style.transition = ''
         }, 200)
