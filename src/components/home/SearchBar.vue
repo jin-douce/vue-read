@@ -12,9 +12,6 @@
           <div class="title-icon-shake-wrapper" @click="showFlapCard">
             <span class="icon-shake icon"></span>
           </div>
-          <div class="title-icon-person-wrapper" @click="person">
-            <span class="icon-person icon"></span>
-          </div>
         </div>
       </transition>
 
@@ -152,23 +149,12 @@ export default {
     }
     .title-icon-shake-wrapper {
       position: absolute;
-      right: px2rem(45);
-      top: 0;
-      height: px2rem(42);
-      @include center;
-    }
-    .title-icon-person-wrapper {
-      position: absolute;
       right: px2rem(15);
       top: 0;
       height: px2rem(42);
       @include center;
-
-      .icon-person {
-        font-size: 20px;
-        color: black;
-      }
     }
+
   }
   
 

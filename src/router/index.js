@@ -26,10 +26,6 @@ export default new VueRouter({
       redirect: '/store/home',
       children: [
         {
-          path: 'personal',
-          component: () => import('../views/store/Personal.vue')
-        },
-        {
           path: 'shelf',
           component: () => import('../views/store/Shelf.vue')
         },
@@ -51,10 +47,6 @@ export default new VueRouter({
           component: () => import('../views/store/StoreDetail.vue')
         }
       ]
-    },
-    {
-      path: '/login',
-      component: () => import('../views/user/Login.vue')
     },
     
   ]

@@ -65,6 +65,7 @@
           .num {
             margin-top: px2rem(5);
             font-size: px2rem(14);
+            color:grey;
           }
         }
       }

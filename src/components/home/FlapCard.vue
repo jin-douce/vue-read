@@ -23,7 +23,7 @@
         </div>
         <div class="content-wrapper">
           <div class="content-title">{{ data ? data.name : "" }}</div>
-          <div class="content-author sub-title-medium">{{ data ? data.author : "" }}</div>
+          <div class="content-author">{{ data ? data.author : "" }}</div>
         </div>
         <div class="read-btn" @click.stop="showDetail(data)">立即阅读</div>
       </div>
@@ -314,6 +314,7 @@ export default {
         .content-author {
           margin-top: px2rem(10);
           text-align: center;
+          font-size: px2rem(14);
         }
         .content-category {
           color: #999;

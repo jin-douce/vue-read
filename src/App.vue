@@ -18,7 +18,7 @@
 <style lang="scss" scoped>
   #app {
     width: 100%;
-    max-width: 450px;
+
     height: 100%;
     margin: 0 auto;
     background: #b5bac2;
