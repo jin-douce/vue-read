@@ -2,7 +2,7 @@
   <div class="shelf-list">
     <div class="item-wrapper" v-for="item in data" :key="item.ids">
         <shelf-item :data="item" :style="{ height: itemHeight }"></shelf-item>
-        <div class="title-wrapper">{{ item.types===1 ? item.name : '分组'+item.title}}</div>
+        <div class="title-wrapper">{{ item.types===1 ? item.name : item.types===2 ? '分组'+item.title : ''}}</div>
     </div>
   </div>
 </template>
