@@ -2,7 +2,7 @@
 <!-- 书架分组(打开前的小图标 九宫格) -->
   <div class="item-category" v-if="data.itemList.length>0">
       <div class="item-category-item" v-for="(item, index) in data.itemList" :key="index">
-        <img class="item-category-img" :src="item.images" />
+        <img class="item-category-img" :src="baseUrl+'/images/'+item.id+'.jpg'" />
       </div>
   </div>
   <div class="item-category-bg" v-else>
@@ -14,6 +14,9 @@
 export default {
   props: {
     data: Object,
+  },
+  data(){
+    baseUrl: process.env.VUE_APP_BOOK_URL
   },
 };
 </script>

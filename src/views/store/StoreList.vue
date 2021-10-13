@@ -7,7 +7,7 @@
       <div v-for="(item, index) in list" :key="index">
         <router-link :to="{path:'/store/detail',query:{bookId:item.id}}">
             <book-info
-            :cover="item.images"
+            :cover="baseUrl+'/images/'+item.id+'.jpg'"
             :title="item.name"
             :author="item.author"
             :desc="item.type"
@@ -51,7 +51,8 @@
     data() {
       return {
         list: null,
-        total: null
+        total: null,
+        baseUrl: process.env.VUE_APP_BOOK_URL
       }
     },
     methods: {

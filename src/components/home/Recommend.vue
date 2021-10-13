@@ -6,7 +6,7 @@
       <div class="recommend-item" v-for="(item, index) in data" :key="index">
         <router-link :to="{path:'/store/detail', query:{bookId: item.id}}">
           <div class="img-wrapper">
-            <img class="img" :src="item.images">
+            <img class="img" :src="baseUrl+'/images/'+item.id+'.jpg'">
           </div>
           <div class="content-wrapper">
             <div class="title" ref="title">{{item.name}}</div>
@@ -31,7 +31,12 @@
     props: {
       data: Array,
       type: Number
-    }
+    },
+    data(){
+      return{
+        baseUrl: process.env.VUE_APP_BOOK_URL
+      }
+    },
   }
 </script>
 

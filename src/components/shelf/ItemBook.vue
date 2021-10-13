@@ -1,6 +1,6 @@
 <template>
   <div class="shelf-item-book">
-    <img class="book-cover" :src="data.images">
+    <img class="book-cover" :src="baseUrl+'/images/'+data.id+'.jpg'">
   </div>
 </template>
 
@@ -8,7 +8,12 @@
   export default {
     props: {
       data: Object
-    }
+    },
+    data(){
+      return{
+        baseUrl: process.env.VUE_APP_BOOK_URL
+      }
+    },
   }
 </script>
 

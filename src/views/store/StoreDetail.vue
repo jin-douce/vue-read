@@ -4,7 +4,7 @@
 
     <scroll class="content-wrapper" :top="42" :bottom="52" @onScroll="onScroll" ref="scroll">
       <book-info
-        :cover="book.images"
+        :cover="baseUrl+'/images/'+book.id+'.jpg'"
         :title="book.name"
         :author="book.author"
         :desc="book.type"
@@ -60,6 +60,7 @@ export default {
       lists:[],
       book: null,
       toastText: "",
+      baseUrl: process.env.VUE_APP_BOOK_URL
     };
   },
   computed: {  

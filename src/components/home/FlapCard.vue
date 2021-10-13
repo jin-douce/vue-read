@@ -19,7 +19,7 @@
     <div class="book-card"  :class="{ animation: runBookCardAnimation }" v-show="runBookCardAnimation" >
       <div class="book-card-wrapper">
         <div class="img-wrapper">
-          <img class="img" :src="data ? data.images : ''" />
+          <img class="img" :src="data ? baseUrl+'/images/'+data.id+'.jpg' : ''" />
         </div>
         <div class="content-wrapper">
           <div class="content-title">{{ data ? data.name : "" }}</div>
@@ -49,6 +49,7 @@ export default {
       intervalTime: 25,
       runFlapCardAnimation: false,
       runBookCardAnimation: false,
+      baseUrl: process.env.VUE_APP_BOOK_URL
     };
   },
   watch: {
